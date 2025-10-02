@@ -34,11 +34,14 @@ app.use(session({
     cookie: { maxAge: 60 * 60 * 1000 }
 }));
 
-mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/cyber_survivor', {
+// UPDATED: Connection logic for MongoDB Atlas
+const mongoURI = process.env.MONGO_URI || "mongodb+srv://parthagr_db_user:agrawal.db%40123@digitalsurvivor2025.vveprg8.mongodb.net/?retryWrites=true&w=majority&appName=Digitalsurvivor2025";
+
+mongoose.connect(mongoURI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
-}).then(() => console.log("✅ Connected to MongoDB"))
-  .catch(err => console.error("❌ MongoDB error:", err));
+}).then(() => console.log("✅ Successfully connected to MongoDB Atlas!"))
+  .catch(err => console.error("❌ MongoDB Atlas connection error:", err));
 
 const User = require('./models/user');
 const Visit = require('./models/visit');
