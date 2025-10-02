@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="/stylesheets/output.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-orbitron { font-family: 'Orbitron', sans-serif; }
+        .form-input:focus, .form-select:focus {
+            --tw-ring-color: theme('colors.indigo.400');
+            box-shadow: 0 0 0 2px var(--tw-ring-color);
+            border-color: theme('colors.indigo.400');
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white antialiased">
+    <div class="fixed inset-0 z-[-1] bg-gradient-to-br from-gray-900 via-[#100f24] to-indigo-900"></div>
+    <div class="relative z-10 flex flex-col min-h-screen items-center justify-center p-4">
+        <div class="w-full max-w-md">
+            <div class="bg-gray-900/50 backdrop-blur-sm border border-indigo-500/30 rounded-2xl shadow-2xl shadow-indigo-500/10">
+                <div class="p-8 md:p-12">
+                    <div class="text-center mb-8">
+                        <h1 class="font-orbitron text-3xl font-bold text-white tracking-wide">Team Registration</h1>
+                        <p class="text-sm text-indigo-300 font-medium mt-1">Assemble your team to enter the arena.</p>
+                    </div>
+                    
+                    <form id="registerForm" class="space-y-6">
+                        <div>
+                            <label for="teamId" class="text-sm font-medium text-gray-300">Team ID</label>
+                            <input type="text" id="teamId" name="teamId" required class="form-input w-full mt-2 px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg outline-none">
+                        </div>
+                        <div>
+                            <label for="delegateId" class="text-sm font-medium text-gray-300">Your Delegate ID</label>
+                            <input type="text" id="delegateId" name="delegateId" required class="form-input w-full mt-2 px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg outline-none">
+                        </div>
+                        <div>
+                            <label for="role" class="text-sm font-medium text-gray-300">Select Your Role</label>
+                            <select id="role" name="role" required class="form-select w-full mt-2 px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg outline-none appearance-none bg-no-repeat bg-right pr-8" style="background-image: url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 fill=%27none%27 viewBox=%270 0 20 20%27%3e%3cpath stroke=%27%239ca3af%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 stroke-width=%271.5%27 d=%27M6 8l4 4 4-4%27/%3e%3c/svg%3e');">
+                                <option value="" disabled selected>Choose a role...</option>
+                                <option value="cyber">CyberSecurity Expert</option>
+                                <option value="eng">Engineer</option>
+                                <option value="opera">Operations Expert</option>
+                            </select>
+                        </div>
+                         <div>
+                            <label for="password" class="text-sm font-medium text-gray-300">Team Password</label>
+                            <input type="password" id="password" name="password" required class="form-input w-full mt-2 px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg outline-none">
+                        </div>
+                        <div>
+                            <button type="submit" class="w-full mt-2 font-bold text-lg text-white bg-indigo-600 hover:bg-indigo-700 py-3 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg shadow-indigo-600/20">
+                                Register
+                            </button>
+                        </div>
+                    </form>
+                    <p id="message" class="text-center text-sm mt-4 min-h-[20px]"></p>
+                </div>
+            </div>
+             <p class="text-center text-xs text-gray-500 mt-6">
+                Already have an account? <a href="/login" class="text-indigo-400 hover:underline">Log in here</a>.
+            </p>
+        </div>
+    </div>
+
+<script>
+    const form = document.getElementById('registerForm');
+    const messageEl = document.getElementById('message');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        messageEl.textContent = ''; 
+
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+
+        try {
+            const response = await fetch('/api/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                messageEl.style.color = 'lightgreen';
+                messageEl.textContent = `${result.message} Redirecting to login...`;
+                setTimeout(() => window.location.href = '/login', 2000);
+            } else {
+                messageEl.style.color = 'rgb(248 113 113)'; // Red-400
+                messageEl.textContent = result.message;
+            }
+        } catch (error) {
+            messageEl.style.color = 'rgb(248 113 113)';
+            messageEl.textContent = 'A network error occurred. Please try again.';
+        }
+    });
+</script>
+</body>
+</html>
+

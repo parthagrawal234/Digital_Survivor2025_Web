@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="/stylesheets/output.css" rel="stylesheet">
+    <script src="/socket.io/socket.io.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <style> .font-orbitron { font-family: 'Orbitron', sans-serif; } </style>
+</head>
+<body class="bg-slate-900 text-gray-300">
+    <div class="fixed inset-0 z-[-1] bg-gradient-to-br from-gray-900 via-[#100f24] to-indigo-900"></div>
+    <main class="min-h-screen flex flex-col items-center justify-center text-center p-4">
+        <div class="max-w-2xl w-full">
+            <h1 class="font-orbitron text-4xl md:text-5xl font-black text-white">Waiting for Team</h1>
+            <p class="mt-4 text-lg text-indigo-300">Your mission will begin once all delegates are ready.</p>
+            
+            <!-- Loading Spinner -->
+            <div class="mt-8 flex justify-center items-center">
+                <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-indigo-400"></div>
+            </div>
+
+            <!-- Team Status -->
+            <div id="team-status-container" class="mt-8 bg-slate-800/50 border border-indigo-500/30 rounded-lg p-6 max-w-sm mx-auto">
+                <h2 class="font-orbitron text-lg font-bold text-white mb-4">Team Status (<span id="ready-count">0</span>/3 Ready)</h2>
+                <ul id="delegate-list" class="space-y-2 text-left">
+                    <!-- Status will be populated by JavaScript -->
+                </ul>
+            </div>
+        </div>
+    </main>
+
+<script>
+    const teamId = '<%= user.teamId %>';
+    const delegateId = '<%= user.delegateId %>';
+    const userRole = '<%= user.role %>';
+    const socket = io();
+
+    // 1. Join the team room as soon as the page loads
+    socket.on('connect', () => {
+        socket.emit('join-team-room', { teamId, delegateId });
+    });
+
+    // 2. Listen for status updates from the server
+    socket.on('team-status-update', (readyDelegates) => {
+        const delegateList = document.getElementById('delegate-list');
+        const readyCountEl = document.getElementById('ready-count');
+        
+        delegateList.innerHTML = ''; // Clear the list
+        const readyIds = Object.keys(readyDelegates);
+        readyCountEl.textContent = readyIds.length;
+
+        readyIds.forEach(id => {
+            const li = document.createElement('li');
+            li.className = 'flex items-center text-green-400';
+            li.innerHTML = `<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> ${id} - Ready`;
+            delegateList.appendChild(li);
+        });
+    });
+
+    // 3. Listen for the final command to start the mission
+    socket.on('start-mission', () => {
+        let roleUrl = '/';
+        if (userRole === 'cyber') roleUrl = '/role/cyber';
+        if (userRole === 'eng') roleUrl = '/role/eng';
+        if (userRole === 'opera') roleUrl = '/role/opera';
+        window.location.href = roleUrl;
+    });
+</script>
+</body>
+</html>

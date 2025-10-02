@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title><%= title %></title>
+    <link href="/stylesheets/output.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <style> .font-orbitron { font-family: 'Orbitron', sans-serif; } </style>
+</head>
+<body class="bg-slate-900 text-gray-300">
+    <div class="fixed inset-0 z-[-1] bg-gradient-to-br from-gray-900 via-[#0c2a2a] to-teal-900"></div>
+    <main class="min-h-screen flex flex-col items-center justify-center text-center p-4">
+        <div class="max-w-2xl w-full bg-slate-800/50 border border-teal-500/30 rounded-lg p-8 shadow-2xl">
+            <h1 class="font-orbitron text-4xl font-black text-white">Final Challenge</h1>
+            <p class="mt-4 text-lg text-teal-300">Your team's final time will be recorded upon successful completion of this task.</p>
+            
+            <div class="mt-8 text-left space-y-4">
+                <p class="text-gray-300">A new digital frontier has emerged, a persistent, shared space where physical and virtual realities converge. It is a collective virtual shared space, created by the convergence of virtually enhanced physical reality and physically persistent virtual space, including the sum of all virtual worlds, augmented reality, and the Internet.</p>
+                <p class="font-bold text-white">What is this concept called?</p>
+            </div>
+
+            <form id="finalChallengeForm" class="mt-8 flex flex-col items-center gap-4">
+                <input type="text" id="finalAnswer" name="finalAnswer" class="form-input w-full max-w-sm text-center font-orbitron tracking-widest uppercase px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none" placeholder="Enter the keyword">
+                <button type="submit" class="w-full max-w-sm font-bold text-lg text-slate-900 bg-teal-500 hover:bg-teal-600 py-3 rounded-lg transition-all duration-300">
+                    Submit Final Answer
+                </button>
+            </form>
+            <p id="message" class="text-center text-sm mt-4 min-h-[20px]"></p>
+        </div>
+    </main>
+
+<script>
+    const form = document.getElementById('finalChallengeForm');
+    const messageEl = document.getElementById('message');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        messageEl.textContent = '';
+        const finalAnswer = form.finalAnswer.value;
+
+        try {
+            const response = await fetch('/api/submit-final-challenge', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ finalAnswer })
+            });
+            const result = await response.json();
+            if (response.ok && result.success) {
+                messageEl.className = 'text-center text-sm mt-4 text-green-400';
+                messageEl.textContent = 'Correct! Final time recorded. Mission Accomplished.';
+                form.querySelector('button').disabled = true;
+            } else {
+                messageEl.className = 'text-center text-sm mt-4 text-red-400';
+                messageEl.textContent = result.message || 'Incorrect answer.';
+            }
+        } catch (error) {
+            messageEl.className = 'text-center text-sm mt-4 text-red-400';
+            messageEl.textContent = 'A network error occurred.';
+        }
+    });
+</script>
+</body>
+</html>
+

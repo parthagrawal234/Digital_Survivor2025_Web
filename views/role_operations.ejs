@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="/stylesheets/output.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; } .font-orbitron { font-family: 'Orbitron', sans-serif; }
+        .fade-in { animation: fadeInAnimation 1s ease-in-out forwards; } @keyframes fadeInAnimation { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-gray-900 text-white antialiased">
+    <div class="fixed inset-0 z-[-1] bg-gradient-to-br from-gray-900 via-[#1f1124] to-pink-900"></div>
+    <div class="min-h-screen flex items-center justify-center p-4">
+        <div id="welcomePage" class="max-w-2xl w-full text-center fade-in">
+            <img src="/images/operationrole.jpg" alt="Operations Expert" class="w-48 h-48 mx-auto rounded-full border-4 border-pink-500/50 shadow-lg shadow-pink-500/20 mb-6">
+            <h1 class="font-orbitron text-4xl font-bold text-pink-400">Operations Expert</h1>
+            <p class="mt-2 text-lg text-gray-300">Welcome, Delegate <span class="font-bold text-white"><%= user.delegateId %></span>.</p>
+            <p class="mt-4 text-gray-400 max-w-lg mx-auto">Signals are hidden in the noise. Your analytical skills are needed to uncover the enemy's plan.</p>
+            <button onclick="enterStory()" class="mt-8 inline-block bg-pink-600 hover:bg-pink-700 text-white font-bold text-lg px-8 py-3 rounded-lg shadow-lg shadow-pink-600/20 transform hover:scale-105 transition-all duration-300">Begin Mission</button>
+        </div>
+        <div id="storyPage" class="max-w-4xl w-full bg-gray-900/50 backdrop-blur-sm border border-pink-500/30 rounded-2xl shadow-2xl shadow-pink-500/10 p-8 md:p-12 hidden">
+            <div class="flex flex-col md:flex-row items-center gap-8">
+                <img src="/images/operstory.jpg" class="w-48 h-48 rounded-lg border-2 border-pink-500/30 flex-shrink-0" alt="Mission Briefing">
+                <div class="text-left">
+                    <h2 class="font-orbitron text-2xl font-bold text-pink-400 mb-4">Mission Briefing...</h2>
+                    <p id="storyText" class="text-gray-300 leading-relaxed min-h-[150px]"></p>
+                    <button onclick="enterSimulation()" class="mt-6 font-bold bg-pink-500/20 hover:bg-pink-500/40 text-pink-300 py-2 px-6 rounded-lg transition-colors">Start Analysis</button>
+                </div>
+            </div>
+        </div>
+        <div id="quizPage" class="max-w-4xl w-full bg-gray-900/50 backdrop-blur-sm border border-pink-500/30 rounded-2xl shadow-2xl shadow-pink-500/10 p-8 md:p-12 hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="font-orbitron text-3xl font-bold text-pink-400">Operations Analysis</h1>
+                <div id="timer" class="font-orbitron text-xl font-bold bg-pink-500/10 text-pink-300 px-4 py-2 rounded-lg border border-pink-500/30">20:00</div>
+            </div>
+            <form id="quizForm" class="space-y-6">
+                <div>
+                    <label for="q1" class="block text-md text-gray-300 leading-relaxed">A person attends a racing event from Rajkot , he goes to another city through train on Monday , he boards the train at 5: 30. The racing event is title sponsored by one of the World’s leading Energy Transition and Decarbonization solutions company. He enteres through a gate which is closest to a major government building. He enjoys the race and the next day he goes to a fort which is a UNESCO world heritage sight. He has forgotten the entire experience. Can u help him Recreate the experience?<br><br><img src="/images/car.jpg" alt="car" class="mt-4 rounded-lg border border-pink-500/30 mx-auto w-full max-w-sm"></label>
+                    <p class="text-xs text-pink-400/70 mt-2">Flag format: css{train_no,title_sponsorer,gate_number,fort_name}</p>
+                    <input type="text" id="q1" name="q1" class="w-full mt-4 px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 outline-none" placeholder="Enter your flag...">
+                    <div class="mt-2">
+                        <button type="button" onclick="getHint('q1', event)" class="text-xs font-semibold text-pink-300 bg-pink-500/10 hover:bg-pink-500/20 px-3 py-1 rounded-md transition-colors">Get Hint</button>
+                        <p id="hint-q1" class="text-xs text-gray-400 mt-1 italic"></p>
+                    </div>
+                </div>
+                <button type="button" onclick="submitAnswers()" class="w-full font-bold text-lg text-slate-900 bg-pink-500 hover:bg-pink-600 py-3 rounded-lg transition-all duration-300">Submit Analysis</button>
+            </form>
+            <p id="result" class="text-center text-sm mt-4 min-h-[20px]"></p>
+        </div>
+    </div>
+<script>
+    let startTime, timerInterval;
+    const storyContent = `Operation Specialist's Mission: Amid the chaos, Nexus Core hides signals in plain sight. Flickering lights, repeating glitches, subtle anomalies — the AI dares you to miss them. Your task is to see the cracks and decode meaning from the noise. The team depends on your vigilance to keep them aligned inside the storm.`;
+
+    function typeWriter(text, element, delay = 20) {
+        let i = 0;
+        element.innerHTML = "";
+        function typing() {
+            if (i < text.length) {
+                element.innerHTML += text.charAt(i);
+                i++;
+                setTimeout(typing, delay);
+            }
+        }
+        typing();
+    }
+
+    function enterStory() {
+        document.getElementById("welcomePage").style.display = "none";
+        const storyPage = document.getElementById("storyPage");
+        storyPage.classList.remove("hidden");
+        storyPage.classList.add("fade-in");
+        typeWriter(storyContent, document.getElementById("storyText"));
+    }
+
+    function enterSimulation() {
+        document.getElementById("storyPage").style.display = "none";
+        const quizPage = document.getElementById("quizPage");
+        quizPage.classList.remove("hidden");
+        quizPage.classList.add("fade-in");
+        startTime = Date.now();
+        startTimer(1200);
+    }
+
+    function startTimer(duration) {
+        let timeLeft = duration;
+        const timerElement = document.getElementById("timer");
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            const minutes = Math.floor(timeLeft / 60);
+            let seconds = timeLeft % 60;
+            seconds = seconds < 10 ? "0" + seconds : seconds;
+            timerElement.textContent = `${minutes}:${seconds}`;
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                submitAnswers();
+            }
+        }, 1000);
+    }
+
+    async function getHint(questionId, event) {
+        const hintButton = event.target;
+        const hintElement = document.getElementById(`hint-${questionId}`);
+        try {
+            const response = await fetch('/api/get-hint', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ questionId: questionId })
+            });
+            const data = await response.json();
+            if (response.ok) {
+                hintElement.textContent = `Hint: ${data.hint}`;
+                hintButton.disabled = true;
+                hintButton.textContent = 'Hint Used';
+                hintButton.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                hintElement.textContent = data.message || 'Could not retrieve hint.';
+            }
+        } catch (error) {
+            hintElement.textContent = 'Network error while fetching hint.';
+        }
+    }
+
+    async function submitAnswers() {
+        clearInterval(timerInterval);
+        const timeTakenSec = Math.floor((Date.now() - startTime) / 1000);
+        const userAnswer = document.getElementById("q1").value.trim();
+        const resultEl = document.getElementById("result");
+
+        const payload = {
+            role: "opera",
+            answers: { q1: userAnswer },
+            timeTakenSec: timeTakenSec
+        };
+
+        try {
+            const response = await fetch("/api/submit-progress", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+            const data = await response.json();
+            if (response.ok) {
+                resultEl.className = 'text-center text-sm mt-4 text-green-400';
+                resultEl.textContent = `Analysis complete. Score: ${data.score}/1. Awaiting team...`;
+                setTimeout(() => { window.location.href = "/post-mission-wait"; }, 2000);
+            } else {
+                resultEl.className = 'text-center text-sm mt-4 text-red-400';
+                resultEl.textContent = data.message || 'Submission failed.';
+            }
+        } catch (error) {
+            resultEl.className = 'text-center text-sm mt-4 text-red-400';
+            resultEl.textContent = 'A network error occurred.';
+        }
+    }
+</script>
+</body>
+</html>
+
