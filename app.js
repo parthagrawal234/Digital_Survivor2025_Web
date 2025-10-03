@@ -46,6 +46,16 @@ const User = require('./models/user');
 const Visit = require('./models/visit');
 
 // ======================= AUTH MIDDLEWARE =======================
+const checkAuthStatus = (req, res, next) => {
+    try {
+        const token = req.cookies.token;
+        res.locals.isLoggedIn = !!(token && jwt.verify(token, JWT_SECRET));
+    } catch (error) {
+        res.locals.isLoggedIn = false;
+    }
+    next();
+};
+
 const protectPlayerRoute = (req, res, next) => {
     try {
         req.user = jwt.verify(req.cookies.token, JWT_SECRET);
@@ -55,24 +65,12 @@ const protectPlayerRoute = (req, res, next) => {
     }
 };
 
-const trackLocation = (req, res, next) => {
-    if (req.user && req.user.teamId && req.user.delegateId) {
-        User.updateOne(
-            { teamId: req.user.teamId, "delegates.delegateId": req.user.delegateId },
-            { $set: { "delegates.$.lastKnownLocation": req.originalUrl } }
-        ).catch(err => console.error(`Failed to update location: ${err.message}`));
+const protectAdminRoute = (req, res, next) => {
+    if (req.session.isAdmin) {
+        next();
+    } else {
+        res.redirect('/admin');
     }
-    next();
-};
-
-const authorizeRole = (requiredRole) => {
-    return (req, res, next) => {
-        if (req.user && req.user.role === requiredRole) {
-            next();
-        } else {
-            res.status(403).redirect('/dashboard');
-        }
-    };
 };
 
 const redirectIfLoggedIn = (req, res, next) => {
@@ -85,24 +83,25 @@ const redirectIfLoggedIn = (req, res, next) => {
     } else { next(); }
 };
 
-const checkAuthStatus = (req, res, next) => {
-    try {
-        const token = req.cookies.token;
-        res.locals.isLoggedIn = !!(token && jwt.verify(token, JWT_SECRET));
-    } catch (error) {
-        res.locals.isLoggedIn = false;
+const authorizeRole = (requiredRole) => {
+    return (req, res, next) => {
+        if (req.user && req.user.role === requiredRole) {
+            next();
+        } else {
+            res.status(403).redirect('/dashboard');
+        }
+    };
+};
+
+const trackLocation = (req, res, next) => {
+    if (req.user && req.user.teamId && req.user.delegateId) {
+        User.updateOne(
+            { teamId: req.user.teamId, "delegates.delegateId": req.user.delegateId },
+            { $set: { "delegates.$.lastKnownLocation": req.originalUrl } }
+        ).catch(err => console.error(`Failed to update location: ${err.message}`));
     }
     next();
 };
-
-const protectAdminRoute = (req, res, next) => {
-    if (req.session.isAdmin) {
-        next();
-    } else {
-        res.redirect('/admin');
-    }
-};
-
 
 // ======================= API ROUTES =======================
 app.post('/api/register', async (req, res) => {
@@ -222,11 +221,9 @@ app.post('/api/end-mission', protectPlayerRoute, async (req, res) => {
             delegate.timeSpent = timeTakenSec;
             delegate.points = delegate.points - (delegate.hintsUsed * 5);
             await team.save();
-
             if (!missionCompleteStates[teamId]) missionCompleteStates[teamId] = {};
             missionCompleteStates[teamId][delegateId] = true;
             io.to(teamId).emit('mission-status-update', missionCompleteStates[teamId]);
-
             res.status(200).json({ message: 'Mission time recorded.' });
         } else {
             res.status(404).json({ message: 'Delegate not found.' });
@@ -236,11 +233,21 @@ app.post('/api/end-mission', protectPlayerRoute, async (req, res) => {
     }
 });
 
-
 app.post('/api/get-hint', protectPlayerRoute, async (req, res) => {
     const { questionId } = req.body;
     const { teamId, delegateId, role } = req.user;
-    const hints = { /* ... all hint text ... */ };
+    const hints = {
+        'cyber': { q1: 'Think about a major cybersecurity event in 2020 involving a software supply chain. The malicious domain was registered in a capital city known for its vibrant culture and history.' },
+        'eng': {
+            q1: 'Focus on the "OR" conditions. Phantom Operative and Manual Override can force activation on their own.',
+            q2: 'The first gate is a NOR gate. The second is a NAND gate. The final gate is an AND gate.',
+            q3: 'Trace the loop for each index. Even indices are doubled, odd indices are decremented.',
+            q4: 'In C, dividing two integers results in an integer. The decimal part is truncated before being assigned to the float.',
+            q5: 'The `sum` variable is never initialized to 0. It starts with a random garbage value.',
+            q6: 'Arrays in C are 0-indexed. An array of size 5 has indices 0, 1, 2, 3, and 4. Accessing index 5 is out of bounds.'
+        },
+        'opera': { q1: 'The racing event is the Formula E championship. Research the title sponsor for the 2024 season in that specific city. The fort is a famous landmark in the same city.' }
+    };
     const hintText = hints[role]?.[questionId];
     if (hintText) {
         try {
@@ -263,7 +270,6 @@ app.post('/api/submit-final-challenge', protectPlayerRoute, async (req, res) => 
     const { finalAnswer } = req.body;
     const { teamId } = req.user;
     const FINAL_CHALLENGE_ANSWER = "YOUR_ANSWER_HERE";
-
     if (finalAnswer && finalAnswer.trim().toUpperCase() === FINAL_CHALLENGE_ANSWER) {
         try {
             await User.findOneAndUpdate({ teamId }, { round3EndTime: new Date() });
@@ -334,23 +340,29 @@ app.get('/admin/logout', (req, res) => {
 io.on('connection', (socket) => {
     let currentTeamId = null;
     let currentDelegateId = null;
-    socket.on('join-team-room', ({ teamId, delegateId }) => {
+    socket.on('join-team-room', async ({ teamId, delegateId }) => {
         socket.join(teamId);
         currentTeamId = teamId;
         currentDelegateId = delegateId;
-        socket.emit('team-status-update', teamReadyStates[teamId] || {});
-    });
-    socket.on('player-ready', async ({ teamId, delegateId }) => {
-        if (!teamReadyStates[teamId]) teamReadyStates[teamId] = {};
-        teamReadyStates[teamId][delegateId] = true;
-        io.to(teamId).emit('team-status-update', teamReadyStates[teamId]);
-        if (Object.keys(teamReadyStates[teamId]).length === 3) {
+        
+        io.to(teamId).emit('team-status-update', teamReadyStates[teamId] || {});
+
+        if (teamReadyStates[teamId] && Object.keys(teamReadyStates[teamId]).length === 3) {
+            console.log(`[Game] Team '${teamId}' is fully ready. Starting mission!`);
             await User.findOneAndUpdate({ teamId }, { round2StartTime: new Date() });
             io.to(teamId).emit('start-mission');
             delete teamReadyStates[teamId];
-        } else {
-            socket.emit('go-to-waiting-room');
         }
+    });
+    socket.on('player-ready', ({ teamId, delegateId }) => {
+        if (!teamReadyStates[teamId]) {
+            teamReadyStates[teamId] = {};
+        }
+        teamReadyStates[teamId][delegateId] = true;
+        
+        io.to(teamId).emit('team-status-update', teamReadyStates[teamId]);
+        
+        socket.emit('go-to-waiting-room');
     });
     socket.on('join-post-mission-room', async ({ teamId, delegateId }) => {
         socket.join(teamId);
