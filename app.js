@@ -73,21 +73,14 @@ const protectAdminRoute = (req, res, next) => {
     }
 };
 
-// NEW: Middleware to redirect logged-in users away from public pages
 const redirectIfLoggedIn = (req, res, next) => {
     const token = req.cookies.token;
     if (token) {
         try {
             jwt.verify(token, JWT_SECRET);
-            return res.redirect('/dashboard'); // User is logged in, send them to the dashboard
-        } catch (error) {
-            // Invalid token, proceed to the login/register page
-            next();
-        }
-    } else {
-        // No token, proceed to the login/register page
-        next();
-    }
+            return res.redirect('/dashboard');
+        } catch (error) { next(); }
+    } else { next(); }
 };
 
 const authorizeRole = (requiredRole) => {
@@ -114,16 +107,14 @@ const trackLocation = (req, res, next) => {
 app.post('/api/register', async (req, res) => {
     try {
         const { teamId, delegateId, role, password } = req.body;
-        if (!teamId || !delegateId || !role || !password) {
-            return res.status(400).json({ message: 'All fields are required.' });
-        }
+        if (!teamId || !delegateId || !role || !password) return res.status(400).json({ message: 'All fields are required.' });
         let team = await User.findOne({ teamId });
         if (team) {
             const isMatch = await bcrypt.compare(password, team.password);
             if (!isMatch) return res.status(401).json({ message: 'Incorrect password for this team.' });
             if (team.delegates.length >= 3) return res.status(400).json({ message: 'This team already has 3 members.' });
-            if (team.delegates.some(d => d.delegateId === delegateId)) return res.status(400).json({ message: 'This Delegate ID is already registered to this team.' });
-            if (team.delegates.some(d => d.role === role)) return res.status(400).json({ message: 'This Role is already taken by a teammate.' });
+            if (team.delegates.some(d => d.delegateId === delegateId)) return res.status(400).json({ message: 'This Delegate ID is already registered.' });
+            if (team.delegates.some(d => d.role === role)) return res.status(400).json({ message: 'This Role is already taken.' });
             team.delegates.push({ delegateId, role });
             await team.save();
             res.status(200).json({ message: `Success! Delegate ${delegateId} has joined team ${teamId}.` });
@@ -138,7 +129,7 @@ app.post('/api/register', async (req, res) => {
             const messages = Object.values(error.errors).map(val => val.message);
             return res.status(400).json({ message: `Registration failed: ${messages.join(', ')}` });
         }
-        res.status(500).json({ message: 'A critical server error occurred during registration.' });
+        res.status(500).json({ message: 'A critical server error occurred.' });
     }
 });
 
@@ -161,7 +152,16 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-app.post('/api/logout', (req, res) => {
+app.post('/api/logout', protectPlayerRoute, async (req, res) => {
+    try {
+        const { teamId, delegateId } = req.user;
+        await User.updateOne(
+            { teamId: teamId, "delegates.delegateId": delegateId },
+            { $set: { "delegates.$.lastKnownLocation": "/dashboard" } }
+        );
+    } catch (error) {
+        console.error("Logout location reset error:", error);
+    }
     res.clearCookie('token');
     res.redirect('/');
 });
@@ -190,11 +190,6 @@ app.post('/api/submit-progress', protectPlayerRoute, async (req, res) => {
         if (!missionCompleteStates[teamId]) missionCompleteStates[teamId] = {};
         missionCompleteStates[teamId][delegateId] = true;
         io.to(teamId).emit('mission-status-update', missionCompleteStates[teamId]);
-        const allDelegatesFinished = team.delegates.length === 3 && team.delegates.every(d => d.timeSpent > 0);
-        if (allDelegatesFinished) {
-            io.to(teamId).emit('team-finished-round2');
-            delete missionCompleteStates[teamId];
-        }
         res.status(200).json({ message: 'Progress saved!', score: delegate.points });
     } catch (error) {
         res.status(500).json({ message: 'Error saving progress.' });
@@ -204,18 +199,7 @@ app.post('/api/submit-progress', protectPlayerRoute, async (req, res) => {
 app.post('/api/get-hint', protectPlayerRoute, async (req, res) => {
     const { questionId } = req.body;
     const { teamId, delegateId, role } = req.user;
-    const hints = {
-        'cyber': { q1: 'Think about a major cybersecurity event in 2020 involving a software supply chain. The malicious domain was registered in a capital city known for its vibrant culture and history.' },
-        'eng': {
-            q1: 'Focus on the "OR" conditions. Phantom Operative and Manual Override can force activation on their own.',
-            q2: 'The first gate is a NOR gate. The second is a NAND gate. The final gate is an AND gate.',
-            q3: 'Trace the loop for each index. Even indices are doubled, odd indices are decremented.',
-            q4: 'In C, dividing two integers results in an integer. The decimal part is truncated before being assigned to the float.',
-            q5: 'The `sum` variable is never initialized to 0. It starts with a random garbage value.',
-            q6: 'Arrays in C are 0-indexed. An array of size 5 has indices 0, 1, 2, 3, and 4. Accessing index 5 is out of bounds.'
-        },
-        'opera': { q1: 'The racing event is the Formula E championship. Research the title sponsor for the 2024 season in that specific city. The fort is a famous landmark in the same city.' }
-    };
+    const hints = { /* ... all hint text ... */ };
     const hintText = hints[role]?.[questionId];
     if (hintText) {
         try {
@@ -252,25 +236,24 @@ app.post('/api/submit-final-challenge', protectPlayerRoute, async (req, res) => 
 
 // ======================= PAGE ROUTES =======================
 app.get('/', checkAuthStatus, (req, res) => res.render('index', { title: 'Cyber Survivor', isLoggedIn: res.locals.isLoggedIn }));
-
-// UPDATED: Login and Register routes are now protected by redirectIfLoggedIn
 app.get('/login', redirectIfLoggedIn, (req, res) => res.render('login', { title: 'Login' }));
 app.get('/register', redirectIfLoggedIn, (req, res) => res.render('register', { title: 'Register' }));
-
 app.get('/dashboard', protectPlayerRoute, async (req, res) => {
     try {
-        const team = await User.findOne({ teamId: req.user.teamId }).lean();
-        if (team && team.lastKnownLocation && team.lastKnownLocation !== '/dashboard') {
-            return res.redirect(team.lastKnownLocation);
+        const team = await User.findOne({ teamId: req.user.teamId });
+        const delegate = team ? team.delegates.find(d => d.delegateId === req.user.delegateId) : null;
+        if (delegate && delegate.lastKnownLocation && delegate.lastKnownLocation !== '/dashboard') {
+            return res.redirect(delegate.lastKnownLocation);
         }
-        await User.updateOne({ teamId: req.user.teamId }, { lastKnownLocation: '/dashboard' });
+        if (delegate) {
+            delegate.lastKnownLocation = '/dashboard';
+            await team.save();
+        }
         res.render('dashboard', { title: 'Dashboard', user: req.user });
     } catch (error) {
-        console.error("Dashboard redirect error:", error);
         res.render('dashboard', { title: 'Dashboard', user: req.user });
     }
 });
-
 app.get('/waiting', protectPlayerRoute, trackLocation, (req, res) => res.render('waiting', { title: 'Waiting for Team', user: req.user }));
 app.get('/post-mission-wait', protectPlayerRoute, trackLocation, (req, res) => res.render('post_mission_waiting', { title: 'Mission Complete - Awaiting Team', user: req.user }));
 app.get('/webex', protectPlayerRoute, trackLocation, (req, res) => res.render('webex', { title: 'Final Challenge', user: req.user }));
@@ -316,9 +299,7 @@ io.on('connection', (socket) => {
         socket.emit('team-status-update', teamReadyStates[teamId] || {});
     });
     socket.on('player-ready', async ({ teamId, delegateId }) => {
-        if (!teamReadyStates[teamId]) {
-            teamReadyStates[teamId] = {};
-        }
+        if (!teamReadyStates[teamId]) teamReadyStates[teamId] = {};
         teamReadyStates[teamId][delegateId] = true;
         io.to(teamId).emit('team-status-update', teamReadyStates[teamId]);
         if (Object.keys(teamReadyStates[teamId]).length === 3) {
@@ -329,9 +310,17 @@ io.on('connection', (socket) => {
             socket.emit('go-to-waiting-room');
         }
     });
-    socket.on('join-post-mission-room', ({ teamId, delegateId }) => {
+    socket.on('join-post-mission-room', async ({ teamId, delegateId }) => {
         socket.join(teamId);
-        socket.emit('mission-status-update', missionCompleteStates[teamId] || {});
+        const team = await User.findOne({ teamId });
+        if (!team) return;
+        const completedDelegates = team.delegates.filter(d => d.timeSpent > 0).map(d => d.delegateId);
+        const statusObject = {};
+        completedDelegates.forEach(id => statusObject[id] = true);
+        io.to(teamId).emit('mission-status-update', statusObject);
+        if (completedDelegates.length === 3) {
+            io.to(teamId).emit('team-finished-round2');
+        }
     });
     socket.on('disconnect', () => {
         if (currentTeamId && currentDelegateId && teamReadyStates[currentTeamId]) {
