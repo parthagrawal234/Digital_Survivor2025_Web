@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Cyber Survivor</title>
-    <link href="stylesheets/output.css" rel="stylesheet">
+    <link href="/stylesheets/output.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;500&display=swap" rel="stylesheet">
@@ -12,40 +12,38 @@
         body { font-family: 'Inter', sans-serif; }
         .font-orbitron { font-family: 'Orbitron', sans-serif; }
         .form-input:focus {
-            --tw-ring-color: theme('colors.indigo.400');
-            --tw-ring-offset-shadow: 0 0 0 var(--tw-ring-offset-width, 0) var(--tw-ring-offset-color);
-            --tw-ring-shadow: 0 0 0 calc(2px + var(--tw-ring-offset-width, 0)) var(--tw-ring-color);
-            box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
-            border-color: theme('colors.indigo.400');
+            --tw-ring-color: theme('colors.green.400');
+            box-shadow: 0 0 0 2px var(--tw-ring-color);
+            border-color: theme('colors.green.400');
         }
     </style>
 </head>
 <body class="bg-gray-900 text-white antialiased">
-    <div class="fixed inset-0 z-[-1] bg-gradient-to-br from-gray-900 via-[#100f24] to-indigo-900"></div>
+    <div class="fixed inset-0 z-[-1] bg-gradient-to-br from-gray-900 via-[#0f241c] to-green-900"></div>
     <div class="relative z-10 flex flex-col min-h-screen items-center justify-center p-4">
         <div class="w-full max-w-md">
-            <div class="bg-gray-900/50 backdrop-blur-sm border border-indigo-500/30 rounded-2xl shadow-2xl shadow-indigo-500/10">
+            <div class="bg-gray-900/50 backdrop-blur-sm border border-green-500/30 rounded-2xl shadow-2xl shadow-green-500/10">
                 <div class="p-8 md:p-12">
                     <div class="text-center mb-8">
                         <h1 class="font-orbitron text-3xl font-bold text-white tracking-wide">Team Authentication</h1>
-                        <p class="text-sm text-indigo-300 font-medium mt-1">Enter your credentials to access the arena.</p>
+                        <p class="text-sm text-green-300 font-medium mt-1">Enter your credentials to access the arena.</p>
                     </div>
                     
                     <form id="loginForm" class="space-y-6">
                         <div>
                             <label for="teamId" class="text-sm font-medium text-gray-300">Team ID</label>
-                            <input type="text" id="teamId" name="teamId" required class="form-input w-full mt-2 px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg focus:outline-none transition-colors">
+                            <input type="text" id="teamId" name="teamId" required class="form-input w-full mt-2 px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg outline-none transition-colors">
                         </div>
                         <div>
                             <label for="password" class="text-sm font-medium text-gray-300">Password</label>
-                            <input type="password" id="password" name="password" required class="form-input w-full mt-2 px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg focus:outline-none transition-colors">
+                            <input type="password" id="password" name="password" required class="form-input w-full mt-2 px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg outline-none transition-colors">
                         </div>
                         <div>
                             <label for="delegateId" class="text-sm font-medium text-gray-300">Your Delegate ID</label>
-                            <input type="text" id="delegateId" name="delegateId" required class="form-input w-full mt-2 px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg focus:outline-none transition-colors">
+                            <input type="text" id="delegateId" name="delegateId" required class="form-input w-full mt-2 px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg outline-none transition-colors">
                         </div>
                         <div>
-                            <button type="submit" class="w-full mt-2 font-bold text-lg text-white bg-indigo-600 hover:bg-indigo-700 py-3 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg shadow-indigo-600/20">
+                            <button type="submit" class="w-full mt-2 font-bold text-lg text-slate-900 bg-green-500 hover:bg-green-600 py-3 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg shadow-green-600/20">
                                 Authenticate & Enter
                             </button>
                         </div>
@@ -54,7 +52,7 @@
                 </div>
             </div>
              <p class="text-center text-xs text-gray-500 mt-6">
-                Don't have an account? <a href="/register" class="text-indigo-400 hover:underline">Register your team</a>.
+                Don't have an account? <a href="/register" class="text-green-400 hover:underline">Register your team</a>.
             </p>
         </div>
     </div>
@@ -62,41 +60,29 @@
     <script>
         const form = document.getElementById('loginForm');
         const messageEl = document.getElementById('message');
-
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
-            const teamId = form.teamId.value;
-            const password = form.password.value;
-            const delegateId = form.delegateId.value;
-
-            messageEl.textContent = '';
-            messageEl.classList.remove('text-green-400', 'text-red-400');
-
+            messageEl.textContent = ''; 
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
             try {
-                const res = await fetch('/api/login', {
+                const response = await fetch('/api/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ teamId, password, delegateId })
+                    body: JSON.stringify(data)
                 });
-
-                const data = await res.json();
-
-                if (res.ok) {
-                    messageEl.textContent = 'Success! Redirecting to dashboard...';
-                    messageEl.classList.add('text-green-400');
-                    
-                    // CRITICAL: Store the individual delegate's ID in the browser
-                    localStorage.setItem('delegateId', delegateId);
-
-                    setTimeout(() => window.location.href = '/dashboard', 1500);
+                const result = await response.json();
+                if (response.ok) {
+                    messageEl.style.color = 'lightgreen';
+                    messageEl.textContent = 'Success! Redirecting...';
+                    localStorage.setItem('delegateId', data.delegateId);
+                    window.location.href = '/dashboard';
                 } else {
-                    messageEl.textContent = data.message;
-                    messageEl.classList.add('text-red-400');
+                    messageEl.style.color = 'rgb(248 113 113)';
+                    messageEl.textContent = result.message;
                 }
             } catch (error) {
-                messageEl.textContent = 'An error occurred. Please try again.';
-                messageEl.classList.add('text-red-400');
+                messageEl.textContent = 'A network error occurred. Please try again.';
             }
         });
     </script>

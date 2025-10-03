@@ -5,57 +5,72 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= title %></title>
     <link href="/stylesheets/output.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;500&display=swap" rel="stylesheet">
-    <style> /* ... your existing styles ... */ </style>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-orbitron { font-family: 'Orbitron', sans-serif; }
+    </style>
 </head>
 <body class="bg-slate-900 text-gray-300 min-h-screen">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <header class="flex justify-between items-center mb-8 pb-4 border-b border-slate-700">
             <h1 class="font-orbitron text-3xl font-bold text-white">Admin Dashboard</h1>
-            <a href="/admin/logout" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">Logout</a>
+            <a href="/admin/logout" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300">Logout</a>
         </header>
-        <div class="bg-slate-800/50 border border-indigo-500/30 rounded-lg shadow-lg overflow-hidden">
+
+        <div class="bg-slate-800/50 border border-green-500/30 rounded-lg shadow-lg overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-slate-700">
                     <thead class="bg-slate-800">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-indigo-300 uppercase tracking-wider">Team ID</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-indigo-300 uppercase tracking-wider">Status</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-indigo-300 uppercase tracking-wider">Delegates & Progress</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-indigo-300 uppercase tracking-wider">Final Score</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-indigo-300 uppercase tracking-wider">Total Time</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-300 uppercase tracking-wider">Team ID</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-300 uppercase tracking-wider">Status</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-300 uppercase tracking-wider">Delegates & Progress</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-300 uppercase tracking-wider">Total Score</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-green-300 uppercase tracking-wider">Visit Count</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-700">
                         <% if (teams.length > 0) { %>
                             <% teams.forEach(team => { %>
-                                <%
-                                    const totalScore = team.delegates.reduce((acc, d) => acc + d.points, 0);
-                                    let totalTimeDisplay = "N/A";
-                                    if (team.round2StartTime && team.round3EndTime) {
-                                        const diffMs = new Date(team.round3EndTime) - new Date(team.round2StartTime);
-                                        const diffSecs = Math.floor(diffMs / 1000);
-                                        const minutes = Math.floor(diffSecs / 60);
-                                        const seconds = diffSecs % 60;
-                                        totalTimeDisplay = `${minutes}m ${seconds < 10 ? '0' : ''}${seconds}s`;
-                                    } else if (team.round2StartTime) {
-                                        totalTimeDisplay = "In Progress";
-                                    }
-                                %>
+                                <% const totalScore = team.delegates.reduce((acc, d) => acc + d.points, 0); %>
+                                <% const isComplete = team.delegates.length === 3; %>
                                 <tr class="bg-slate-800/60 even:bg-slate-800/40">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white"><%= team.teamId %></td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                        <!-- status badge logic -->
+                                        <% if (isComplete) { %>
+                                            <span class="px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-500/20 text-green-300">
+                                                Complete
+                                            </span>
+                                        <% } else { %>
+                                            <span class="px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-500/20 text-yellow-300">
+                                                In Progress (<%= team.delegates.length %>/3)
+                                            </span>
+                                        <% } %>
                                     </td>
                                     <td class="px-6 py-4 text-sm text-gray-300">
-                                        <!-- delegates info logic -->
+                                        <div class="space-y-2">
+                                            <% team.delegates.forEach(delegate => { %>
+                                                <div>
+                                                    <strong><%= delegate.delegateId %></strong> (<%= delegate.role %>)
+                                                    <div class="text-xs text-gray-400">
+                                                        <span class="font-medium text-green-400"><%= delegate.points %> pts</span> / 
+                                                        <span><%= delegate.timeSpent %>s</span>
+                                                    </div>
+                                                </div>
+                                            <% }); %>
+                                        </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-lg text-green-400"><%= totalScore %></td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-cyan-400"><%= totalTimeDisplay %></td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300"><%= team.visitCount %></td>
                                 </tr>
                             <% }); %>
                         <% } else { %>
-                            <!-- no teams message -->
+                            <tr>
+                                <td colspan="5" class="text-center py-10 text-gray-400">No teams have registered yet.</td>
+                            </tr>
                         <% } %>
                     </tbody>
                 </table>

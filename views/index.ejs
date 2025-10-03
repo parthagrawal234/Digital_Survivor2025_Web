@@ -4,121 +4,105 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= title %></title>
-    <link href="stylesheets/output.css" rel="stylesheet">
+    <link href="/stylesheets/output.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;500&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            overflow: hidden; /* Prevents scrollbars from the oversized background */
+            background-image: url('/images/index_background.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
         }
         .font-orbitron {
             font-family: 'Orbitron', sans-serif;
         }
-        #background-parallax-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            background-color: #0c0a1c; 
-        }
-        #background-parallax {
-            position: absolute;
-            top: -5%; 
-            left: -5%;
-            width: 110%;
-            height: 110%;
-            background-image: url('/images/index_background.jpg');
-            background-size: cover;
-            background-position: center;
-            transition: transform 0.2s ease-out;
-        }
     </style>
 </head>
-<body class="bg-gray-900 text-white antialiased">
+<body class="bg-slate-900 text-white antialiased">
 
-    <!-- Background Container -->
-    <div id="background-parallax-container">
-        <div id="background-parallax"></div>
-    </div>
+    <div class="relative z-10 flex flex-col min-h-screen bg-black/50">
 
-    <!-- Main Content Wrapper -->
-    <div class="relative z-10 flex flex-col min-h-screen">
-
-        <!-- Header Section -->
         <header class="w-full px-4 md:px-8 py-6">
             <div class="max-w-7xl mx-auto flex justify-between items-center">
-                <!-- Left Spacer -->
-                <div class="w-1/3"></div>
                 
-                <!-- Centered Logo and Title -->
+                <div class="w-1/3 flex justify-start">
+                    <div class="md:hidden">
+                        <button id="menu-btn" class="text-gray-300 hover:text-green-400 focus:outline-none">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
                 <div class="w-1/3 text-center">
                     <a href="/" class="inline-block">
-                        <svg class="h-8 w-8 mx-auto text-cyan-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 00-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                        <svg class="h-12 w-12 mx-auto text-green-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 00-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
                         </svg>
                     </a>
                     <h1 class="font-orbitron text-2xl font-bold text-white mt-2 tracking-widest">
                         Cyber Survivor
                     </h1>
-                    <p class="text-sm text-cyan-400 font-medium tracking-wider">
+                    <p class="text-sm text-green-400 font-medium tracking-wider">
                         Digital Dystopia
                     </p>
                 </div>
                 
-                <!-- Right-aligned Navigation -->
                 <nav class="w-1/3 flex justify-end">
-                    <ul class="flex items-center space-x-6">
+                    <ul class="hidden md:flex items-center space-x-6">
+                        <li><a href="/register" class="text-gray-300 hover:text-green-400 font-medium transition-colors duration-300">Register</a></li>
+                        <li><a href="/login" class="text-gray-300 hover:text-green-400 font-medium transition-colors duration-300">Login</a></li>
                         <li>
-                            <a href="/register" class="text-gray-300 hover:text-cyan-400 font-medium transition-colors duration-300">Register</a>
-                        </li>
-                        <li>
-                            <a href="/login" class="text-gray-300 hover:text-cyan-400 font-medium transition-colors duration-300">Login</a>
-                        </li>
-                        <li>
-                            <!-- UPDATED: Competition button now has conditional logic -->
-                            <% if (isLoggedIn) { %>
-                                <a href="/dashboard" class="bg-cyan-500/10 border border-cyan-500 hover:bg-cyan-500/20 text-cyan-400 font-bold py-2 px-4 rounded-lg transition-colors duration-300">
-                                    Competition
-                                </a>
-                            <% } else { %>
-                                <a href="/login" class="bg-cyan-500/10 border border-cyan-500 hover:bg-cyan-500/20 text-cyan-400 font-bold py-2 px-4 rounded-lg transition-colors duration-300">
-                                    Competition
-                                </a>
-                            <% } %>
+                            <a href="<%= isLoggedIn ? '/dashboard' : '/login' %>" class="bg-green-500/10 border border-green-500 hover:bg-green-500/20 text-green-400 font-bold py-2 px-4 rounded-lg transition-colors duration-300">
+                                Competition
+                            </a>
                         </li>
                     </ul>
                 </nav>
             </div>
         </header>
 
-        <!-- Hero Content Section -->
-        <main class="flex-grow flex flex-col items-center justify-center text-center px-4 -mt-20">
+        <main class="flex-grow flex flex-col items-center justify-center text-center px-4">
             <h2 class="font-orbitron text-5xl md:text-7xl font-black text-white leading-tight drop-shadow-lg">
-                Enter the Grid.
+                 Enter the Grid.
             </h2>
-            <h3 class="font-orbitron text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-blue-400 leading-tight drop-shadow-lg mt-2">
+            <h3 class="font-orbitron text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-300 to-teal-400 leading-tight drop-shadow-lg mt-2">
                 Escape the Darkness.
             </h3>
             <p class="max-w-2xl mx-auto mt-6 text-lg text-gray-300">
-                <b>The Phantoms breach the first layer of Nexus Core — but the AI strikes back, creating a No-Comm Zone. Each Phantom must rely on their expertise as Cybersec Experts, Engineers, and Operation Speacialist tackle separate challenges.
-                     Only by combining their fragments of access can they reopen a secure channel and launch the next web exploitation attack.</b>
+                The Phantoms breach the first layer of Nexus Core — but the AI strikes back, creating a No-Comm Zone. Each Phantom must rely on their expertise as Cybersec Experts, Engineers, and Operation Speacialist tackle separate challenges. Only by combining their fragments of access can they reopen a secure channel and launch the next web exploitation attack.
             </p>
             <div class="mt-10">
-                <% if (isLoggedIn) { %>
-                    <a href="/dashboard" class="inline-block bg-cyan-500 hover:bg-cyan-600 text-gray-900 font-bold text-lg px-8 py-4 rounded-lg shadow-lg shadow-cyan-500/20 transform hover:scale-105 transition-all duration-300">
-                        Decrypt Next Layer
-                    </a>
-                <% } else { %>
-                    <a href="/login" class="inline-block bg-cyan-500 hover:bg-cyan-600 text-gray-900 font-bold text-lg px-8 py-4 rounded-lg shadow-lg shadow-cyan-500/20 transform hover:scale-105 transition-all duration-300">
-                       Decrypt Next Layer
-                    </a>
-                <% } %>
+                <a href="<%= isLoggedIn ? '/dashboard' : '/login' %>" class="inline-block bg-green-500 hover:bg-green-600 text-gray-900 font-bold text-lg px-8 py-4 rounded-lg shadow-lg shadow-green-500/20 transform hover:scale-105 transition-all duration-300">
+                    Enter the World
+                </a>
             </div>
         </main>
+    </div>
+
+    <div id="mobile-menu" class="fixed top-0 right-0 h-full w-64 bg-slate-900/90 backdrop-blur-lg p-6 transform transition-transform duration-300 ease-in-out z-50 translate-x-full">
+        <div class="flex justify-end mb-8">
+            <button id="close-btn" class="text-gray-400 hover:text-white">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        <nav>
+            <ul class="flex flex-col items-center space-y-6">
+                <li><a href="/register" class="text-xl text-gray-300 hover:text-green-400 font-medium transition-colors duration-300">Register</a></li>
+                <li><a href="/login" class="text-xl text-gray-300 hover:text-green-400 font-medium transition-colors duration-300">Login</a></li>
+                <li>
+                    <a href="<%= isLoggedIn ? '/dashboard' : '/login' %>" class="block mt-4 bg-green-500/10 border border-green-500 hover:bg-green-500/20 text-green-400 font-bold py-3 px-6 rounded-lg transition-colors duration-300">
+                        Competition
+                    </a>
+                </li>
+            </ul>
+        </nav>
     </div>
 
     <script>
