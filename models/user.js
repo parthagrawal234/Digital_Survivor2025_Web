@@ -24,6 +24,11 @@ const delegateSchema = new mongoose.Schema({
     hintsUsed: {
         type: Number,
         default: 0
+    },
+    // MOVED: Location is now tracked per delegate
+    lastKnownLocation: {
+        type: String,
+        default: '/dashboard'
     }
 });
 
@@ -47,12 +52,8 @@ const userSchema = new mongoose.Schema({
     },
     round3EndTime: {
         type: Date
-    },
-    // NEW: Field to store the team's last visited page URL
-    lastKnownLocation: {
-        type: String,
-        default: '/dashboard'
     }
+    // REMOVED: lastKnownLocation is no longer here
 });
 
 module.exports = mongoose.model('User', userSchema);

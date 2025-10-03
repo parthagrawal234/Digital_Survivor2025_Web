@@ -101,9 +101,11 @@ const authorizeRole = (requiredRole) => {
 };
 
 const trackLocation = (req, res, next) => {
-    if (req.user && req.user.teamId) {
-        User.updateOne({ teamId: req.user.teamId }, { lastKnownLocation: req.originalUrl })
-            .catch(err => console.error(`Failed to update location for ${req.user.teamId}: ${err.message}`));
+    if (req.user && req.user.teamId && req.user.delegateId) {
+        User.updateOne(
+            { teamId: req.user.teamId, "delegates.delegateId": req.user.delegateId },
+            { $set: { "delegates.$.lastKnownLocation": req.originalUrl } }
+        ).catch(err => console.error(`Failed to update location: ${err.message}`));
     }
     next();
 };
