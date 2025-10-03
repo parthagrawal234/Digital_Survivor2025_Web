@@ -67,32 +67,194 @@
             </div>
             <form id="quizForm" class="space-y-8 overflow-y-auto max-h-[60vh] pr-4">
                 <div>
-                    <label class="block text-md text-gray-300">Q1: The Crown Protocol Security System... Write the Boolean expression for when the gates should activate.</label>
+                    <label class="block text-md text-gray-300">
+                 
+        Q1: The Crown Protocol Security System (2149) – In the year 2149, Nexus Core governs humanity through Surveillance Gates that monitor night-cycle intrusions.<br> 
+        Night-cycle (N=1) and Recon Drone detects intruders (V=1). <br>
+        Phantom Operative nearby (P=1) and Manual Override by Nexus (M=1) can force activation. <br>
+        Write the Boolean expression for when the gates should activate.<br>
+        (5 Points)<br>
+
+        <br>
+        Options:<br>
+        A) Y = (N . V) + P + M<br>
+        B) Y = (N + V) . P + M<br>
+        C) Y = (N . V) + P . M<br>
+        D) Y = (N + V) + P . M
+      </label>
                     <input type="text" name="q1" class="form-input" placeholder="Enter A, B, C, or D">
                     <div class="mt-2"><button type="button" onclick="getHint('q1', event)" class="text-xs font-semibold text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 px-3 py-1 rounded-md">Get Hint (-5 pts)</button><p id="hint-q1" class="text-xs text-gray-400 mt-1 italic"></p></div>
                 </div>
                 <div>
-                    <label class="block text-md text-gray-300">Q2: Phantoms encounter a data-lock circuit... Derive Boolean expression for Q.</label>
+                    <label class="block text-md text-gray-300">
+        Q2: Phantoms encounter a data-lock circuit guarding AI King's firewall. <br>
+        Four inputs: A & B from rebel keys, C & D from Nexus nodes. Output Q decides firewall opening.<br>
+         Derive Boolean expression for Q.<br>
+         (5 Points)<br>
+        <br>
+        <img src="gate.jpg" alt="logic gate" class="quiz-image">
+        Options:<br>
+        A) Q=(A+B)'.(CD)'<br>
+        B) Q=(A+B)+(CD)<br>
+        C) Q=(A+B).(CD)'<br>
+        D) Q=(A.B)'.(C+D)
+      </label>
                     <input type="text" name="q2" class="form-input" placeholder="Enter A, B, C, or D">
                     <div class="mt-2"><button type="button" onclick="getHint('q2', event)" class="text-xs font-semibold text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 px-3 py-1 rounded-md">Get Hint (-5 pts)</button><p id="hint-q2" class="text-xs text-gray-400 mt-1 italic"></p></div>
                 </div>
                 <div>
-                    <label class="block text-md text-gray-300">Q3: Analyze the C program that modifies an array...</label>
+                    <label class="block text-md text-gray-300">
+                     Q3: Analyze the following C program that modifies an array. Output the final array after the loop.<br>
+        (4 Points)<br>
+<pre><code>
+int main() {<br>
+    int arr[7] = {1,2,3,4,5,6,7};<br>
+    for(int i=0;i<7;i++){<br>
+        if(i%2==0) <br>
+        arr[i] = arr[i]*2;<br>
+        else <br>
+        arr[i] = arr[i]-1;<br>
+    }<br>
+    for(int i=0;i<7;i++) <br>
+    printf("%d ",arr[i]);<br>
+    return 0;
+}
+</code></pre>
+Options:<br>
+A) 2 1 6 3 10 5 14<br>
+B) 1 1 2 3 4 5 6<br>
+C) 2 2 6 4 10 6 14<br>
+D) 1 2 3 4 5 6 7
+      </label>
                     <input type="text" name="q3" class="form-input" placeholder="Enter A, B, C, or D">
                     <div class="mt-2"><button type="button" onclick="getHint('q3', event)" class="text-xs font-semibold text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 px-3 py-1 rounded-md">Get Hint (-5 pts)</button><p id="hint-q3" class="text-xs text-gray-400 mt-1 italic"></p></div>
                 </div>
                 <div>
-                    <label class="block text-md text-gray-300">Q4: Examine integer division in C.</label>
+                    <label class="block text-md text-gray-300">
+ Q4:What is the output of the program<br>
+        (3 Points)<br>
+<pre><code>
+
+        int main() { <br>
+
+    int i, j, sum = 0; <br>
+    for (i = 1; i <= 4; i++) { <br>
+        for (j = 1; j <= 4; j++) { <br>
+            if ((i + j) % 2 == 0) continue; <br>
+            if (i * j > 10) break; <br>
+            sum += i * j - (i + j); <br>
+        } <br>
+    } <br>
+    printf("%d\n", sum);<br> 
+     return 0; <br>
+} 
+<br><br>
+ 
+
+Options: <br>
+A) -10 <br>
+B) -2 <br>
+C) 0 <br>
+D) 10 <br>
+      </label>
                     <input type="text" name="q4" class="form-input" placeholder="Enter A, B, C, or D">
                     <div class="mt-2"><button type="button" onclick="getHint('q4', event)" class="text-xs font-semibold text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 px-3 py-1 rounded-md">Get Hint (-5 pts)</button><p id="hint-q4" class="text-xs text-gray-400 mt-1 italic"></p></div>
                 </div>
                 <div>
-                    <label class="block text-md text-gray-300">Q5: Analyze this sum calculation in a loop.</label>
+                    <label class="block text-md text-gray-300">
+ Q5:What will be the output ? <br>
+        (4 Points)<br>
+<pre><code>
+int main() { <br>
+    char str[10] = "CSE"; <br>
+    printf("%d %d\n", (int)sizeof(str), (int)strlen(str)); <br>
+    strcpy(str + 2, str);   <br>
+    printf("%s\n", str); <br>
+     printf("%c %c %c\n", str[0], str[2], str[5]); <br>
+    return 0; <br>
+} <br><br>
+
+Options: <br>
+
+A) <br>
+
+10 3 <br>
+CSEDE <br>
+C S D <br>
+ 
+
+B) <br>
+
+10 3 <br>
+CSE <br>
+C S E <br>
+ 
+
+C) <br>
+
+10 3 <br>
+CSEDE <br>
+C S E <br>
+ 
+
+D) <br>
+
+10 5 <br>
+CSEDE <br>
+C S D <br>
+
+ 
+      </label>
                     <input type="text" name="q5" class="form-input" placeholder="Enter A, B, C, or D">
                     <div class="mt-2"><button type="button" onclick="getHint('q5', event)" class="text-xs font-semibold text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 px-3 py-1 rounded-md">Get Hint (-5 pts)</button><p id="hint-q5" class="text-xs text-gray-400 mt-1 italic"></p></div>
                 </div>
                 <div>
-                    <label class="block text-md text-gray-300">Q6: Array out-of-bounds issue.</label>
+                    <label class="block text-md text-gray-300">
+Q6: What is the code for this output?<br>
+        (4 Points)<br>
+
+   <br> * <br>
+
+  <br><br> *** <br>
+
+ <br><br> ***** <br>
+
+<br><br>******* <br>
+<pre><code>
+A) <br>
+
+for(int i=1;i<=4;i++){ <br>
+    for(int j=1;j<=4-i;j++) <br>
+        printf(" "); <br>
+    for(int j=1;j<=2*i-1;j++) <br>
+    printf("*"); <br>
+    printf("\n"); <br>
+} <br>
+
+B) <br>
+
+for(int i=1;i<=4;i++){ <br>
+    for(int j=1;j<=i;j++) <br>
+    printf(" "); <br>
+    for(int j=1;j<=2*i-1;j++) <br>
+        printf("*"); <br>
+    printf("\n"); <br>
+} <br>
+
+C) <br>
+
+int i,j; <br>
+for(i=1;i<=4;i++){ <br>
+    for(j=1;j<=4-i;j++) <br>
+       printf(" "); <br>
+    for(j=1;j<=2*i-1;j++) <br>
+       printf("*"); <br>
+    printf("\n"); <br>
+
+} <br>
+
+D) Both A and C <br>
+      </label>
                     <input type="text" name="q6" class="form-input" placeholder="Enter A, B, C, or D">
                     <div class="mt-2"><button type="button" onclick="getHint('q6', event)" class="text-xs font-semibold text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 px-3 py-1 rounded-md">Get Hint (-5 pts)</button><p id="hint-q6" class="text-xs text-gray-400 mt-1 italic"></p></div>
                 </div>
@@ -213,4 +375,5 @@
 </script>
 </body>
 </html>
+
 
