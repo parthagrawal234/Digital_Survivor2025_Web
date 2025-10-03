@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= title %></title>
-    <link href="/stylesheets/output.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
@@ -26,13 +25,13 @@
         }
         .page.active { opacity: 1; visibility: visible; transform: scale(1); }
         .content-panel {
-            width: 70%; max-width: 1000px; background: rgba(10, 10, 20, 0.6);
-            border: 1px solid #00f6ff;
-            box-shadow: 0 0 25px #00f6ff, inset 0 0 15px rgba(0, 246, 255, 0.4);
+            width: 70%; max-width: 1000px; background: rgba(20, 10, 10, 0.6);
+            border: 1px solid #ff073a;
+            box-shadow: 0 0 25px #ff073a, inset 0 0 15px rgba(255, 7, 58, 0.4);
             backdrop-filter: blur(8px); padding: 50px; text-align: center;
         }
         .content-panel h2 {
-            color: #00f6ff; text-shadow: 0 0 10px #00f6ff;
+            color: #ff073a; text-shadow: 0 0 10px #ff073a;
             font-size: 2.5rem; margin-top: 0;
         }
         #story-text {
@@ -45,26 +44,46 @@
             color: #e0e0e0; font-family: 'Share Tech Mono', monospace; font-size: 1rem;
         }
         .answer-box:focus {
-            outline: none; border-color: #00f6ff; box-shadow: 0 0 10px #00f6ff;
+            outline: none; border-color: #ff073a; box-shadow: 0 0 10px #ff073a;
         }
         .continue-btn {
             margin-top: 30px; padding: 12px 25px; background: transparent;
-            border: 1px solid #00f6ff; color: #00f6ff;
+            border: 1px solid #ff073a; color: #ff073a;
             cursor: pointer; transition: all 0.3s ease;
         }
         .continue-btn:hover {
-            background: #00f6ff; color: #0d0208; box-shadow: 0 0 15px #00f6ff;
+            background: #ff073a; color: #0d0208; box-shadow: 0 0 15px #ff073a;
+        }
+        .logout-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 10px 15px;
+            background: rgba(255, 7, 58, 0.2);
+            border: 1px solid #ff073a;
+            color: #ff073a;
+            cursor: pointer;
+            z-index: 20;
+            transition: all 0.3s ease;
+        }
+        .logout-button:hover {
+            background: #ff073a;
+            color: #0d0208;
         }
     </style>
 </head>
 <body>
     <canvas id="network-canvas"></canvas>
+    
+    <form action="/api/logout" method="POST">
+        <button type="submit" class="logout-button">Logout</button>
+    </form>
 
     <div id="story-page" class="page active">
         <div class="content-panel">
-            <h2>OPERATION NIGHTFALL</h2>
+            <h2>FINAL DIRECTIVE</h2>
             <p id="story-text"></p>
-            <button class="continue-btn" onclick="showChallenge()">VIEW DIRECTIVE</button>
+            <button class="continue-btn" onclick="showChallenge()">VIEW OBJECTIVE</button>
         </div>
     </div>
 
@@ -186,7 +205,7 @@
                 let distance = ((particles[a].x - particles[b].x) * (particles[a].x - particles[b].x)) + ((particles[a].y - particles[b].y) * (particles[a].y - particles[b].y));
                 if (distance < (canvas.width / 7) * (canvas.height / 7)) {
                     opacityValue = 1 - (distance / 20000);
-                    ctx.strokeStyle = `rgba(0, 246, 255, ${opacityValue})`;
+                    ctx.strokeStyle = `rgba(255, 7, 58, ${opacityValue})`; // Red lines
                     ctx.lineWidth = 1;
                     ctx.beginPath(); ctx.moveTo(particles[a].x, particles[a].y);
                     ctx.lineTo(particles[b].x, particles[b].y); ctx.stroke();
