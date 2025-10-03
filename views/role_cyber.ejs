@@ -18,7 +18,22 @@
 <body class="bg-gray-900 text-white antialiased">
     <div class="fixed inset-0 z-[-1] bg-gradient-to-br from-gray-900 via-[#0b1029] to-cyan-900"></div>
 
-    <div class="min-h-screen flex items-center justify-center p-4">
+    <!-- NEW: Persistent Header with Logout Button -->
+    <header class="absolute top-0 left-0 w-full p-4 md:p-6 z-20">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div>
+                <h1 class="font-orbitron text-lg font-bold text-white">Team: <span class="text-cyan-400"><%= user.teamId %></span></h1>
+                <p class="text-xs text-gray-400">Delegate: <span class="font-medium text-gray-300"><%= user.delegateId %></span></p>
+            </div>
+            <form action="/api/logout" method="POST">
+                <button type="submit" class="bg-red-600/80 hover:bg-red-700/80 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300 text-sm backdrop-blur-sm">
+                    Logout
+                </button>
+            </form>
+        </div>
+    </header>
+
+    <main class="min-h-screen flex items-center justify-center p-4">
 
         <div id="welcomePage" class="max-w-2xl w-full text-center fade-in">
             <img src="/images/cyberrolecard.jpg" alt="Cybersecurity Expert" class="w-48 h-48 mx-auto rounded-full border-4 border-cyan-500/50 shadow-lg shadow-cyan-500/20 mb-6">
@@ -66,7 +81,7 @@
             </form>
             <p id="result" class="text-center text-sm mt-4 min-h-[20px]"></p>
         </div>
-    </div>
+    </main>
 
 <script>
     let startTime;

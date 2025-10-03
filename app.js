@@ -73,14 +73,28 @@ const protectAdminRoute = (req, res, next) => {
     }
 };
 
-// NEW: Middleware to authorize a player's role for a specific page
+// NEW: Middleware to redirect logged-in users away from public pages
+const redirectIfLoggedIn = (req, res, next) => {
+    const token = req.cookies.token;
+    if (token) {
+        try {
+            jwt.verify(token, JWT_SECRET);
+            return res.redirect('/dashboard'); // User is logged in, send them to the dashboard
+        } catch (error) {
+            // Invalid token, proceed to the login/register page
+            next();
+        }
+    } else {
+        // No token, proceed to the login/register page
+        next();
+    }
+};
+
 const authorizeRole = (requiredRole) => {
     return (req, res, next) => {
-        // This runs after protectPlayerRoute, so req.user is available
         if (req.user && req.user.role === requiredRole) {
-            next(); // Role is correct, allow access
+            next();
         } else {
-            // Role is incorrect, deny access and redirect to their dashboard
             res.status(403).redirect('/dashboard');
         }
     };
@@ -236,8 +250,10 @@ app.post('/api/submit-final-challenge', protectPlayerRoute, async (req, res) => 
 
 // ======================= PAGE ROUTES =======================
 app.get('/', checkAuthStatus, (req, res) => res.render('index', { title: 'Cyber Survivor', isLoggedIn: res.locals.isLoggedIn }));
-app.get('/login', (req, res) => res.render('login', { title: 'Login' }));
-app.get('/register', (req, res) => res.render('register', { title: 'Register' }));
+
+// UPDATED: Login and Register routes are now protected by redirectIfLoggedIn
+app.get('/login', redirectIfLoggedIn, (req, res) => res.render('login', { title: 'Login' }));
+app.get('/register', redirectIfLoggedIn, (req, res) => res.render('register', { title: 'Register' }));
 
 app.get('/dashboard', protectPlayerRoute, async (req, res) => {
     try {
@@ -256,8 +272,6 @@ app.get('/dashboard', protectPlayerRoute, async (req, res) => {
 app.get('/waiting', protectPlayerRoute, trackLocation, (req, res) => res.render('waiting', { title: 'Waiting for Team', user: req.user }));
 app.get('/post-mission-wait', protectPlayerRoute, trackLocation, (req, res) => res.render('post_mission_waiting', { title: 'Mission Complete - Awaiting Team', user: req.user }));
 app.get('/webex', protectPlayerRoute, trackLocation, (req, res) => res.render('webex', { title: 'Final Challenge', user: req.user }));
-
-// UPDATED: Role pages are now protected by the authorizeRole middleware
 app.get('/role/cyber', protectPlayerRoute, authorizeRole('cyber'), trackLocation, (req, res) => res.render('role_cyber', { title: 'CyberSecurity Expert', user: req.user }));
 app.get('/role/eng', protectPlayerRoute, authorizeRole('eng'), trackLocation, (req, res) => res.render('role_engineer', { title: 'Engineer', user: req.user }));
 app.get('/role/opera', protectPlayerRoute, authorizeRole('opera'), trackLocation, (req, res) => res.render('role_operations', { title: 'Operations Expert', user: req.user }));
@@ -293,21 +307,18 @@ app.get('/admin/logout', (req, res) => {
 io.on('connection', (socket) => {
     let currentTeamId = null;
     let currentDelegateId = null;
-
     socket.on('join-team-room', ({ teamId, delegateId }) => {
         socket.join(teamId);
         currentTeamId = teamId;
         currentDelegateId = delegateId;
         socket.emit('team-status-update', teamReadyStates[teamId] || {});
     });
-
     socket.on('player-ready', async ({ teamId, delegateId }) => {
         if (!teamReadyStates[teamId]) {
             teamReadyStates[teamId] = {};
         }
         teamReadyStates[teamId][delegateId] = true;
         io.to(teamId).emit('team-status-update', teamReadyStates[teamId]);
-
         if (Object.keys(teamReadyStates[teamId]).length === 3) {
             await User.findOneAndUpdate({ teamId }, { round2StartTime: new Date() });
             io.to(teamId).emit('start-mission');
@@ -316,12 +327,10 @@ io.on('connection', (socket) => {
             socket.emit('go-to-waiting-room');
         }
     });
-
     socket.on('join-post-mission-room', ({ teamId, delegateId }) => {
         socket.join(teamId);
         socket.emit('mission-status-update', missionCompleteStates[teamId] || {});
     });
-
     socket.on('disconnect', () => {
         if (currentTeamId && currentDelegateId && teamReadyStates[currentTeamId]) {
             delete teamReadyStates[currentTeamId][currentDelegateId];
