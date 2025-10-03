@@ -73,6 +73,19 @@ const protectAdminRoute = (req, res, next) => {
     }
 };
 
+// NEW: Middleware to authorize a player's role for a specific page
+const authorizeRole = (requiredRole) => {
+    return (req, res, next) => {
+        // This runs after protectPlayerRoute, so req.user is available
+        if (req.user && req.user.role === requiredRole) {
+            next(); // Role is correct, allow access
+        } else {
+            // Role is incorrect, deny access and redirect to their dashboard
+            res.status(403).redirect('/dashboard');
+        }
+    };
+};
+
 const trackLocation = (req, res, next) => {
     if (req.user && req.user.teamId) {
         User.updateOne({ teamId: req.user.teamId }, { lastKnownLocation: req.originalUrl })
@@ -243,9 +256,11 @@ app.get('/dashboard', protectPlayerRoute, async (req, res) => {
 app.get('/waiting', protectPlayerRoute, trackLocation, (req, res) => res.render('waiting', { title: 'Waiting for Team', user: req.user }));
 app.get('/post-mission-wait', protectPlayerRoute, trackLocation, (req, res) => res.render('post_mission_waiting', { title: 'Mission Complete - Awaiting Team', user: req.user }));
 app.get('/webex', protectPlayerRoute, trackLocation, (req, res) => res.render('webex', { title: 'Final Challenge', user: req.user }));
-app.get('/role/cyber', protectPlayerRoute, trackLocation, (req, res) => res.render('role_cyber', { title: 'CyberSecurity Expert', user: req.user }));
-app.get('/role/eng', protectPlayerRoute, trackLocation, (req, res) => res.render('role_engineer', { title: 'Engineer', user: req.user }));
-app.get('/role/opera', protectPlayerRoute, trackLocation, (req, res) => res.render('role_operations', { title: 'Operations Expert', user: req.user }));
+
+// UPDATED: Role pages are now protected by the authorizeRole middleware
+app.get('/role/cyber', protectPlayerRoute, authorizeRole('cyber'), trackLocation, (req, res) => res.render('role_cyber', { title: 'CyberSecurity Expert', user: req.user }));
+app.get('/role/eng', protectPlayerRoute, authorizeRole('eng'), trackLocation, (req, res) => res.render('role_engineer', { title: 'Engineer', user: req.user }));
+app.get('/role/opera', protectPlayerRoute, authorizeRole('opera'), trackLocation, (req, res) => res.render('role_operations', { title: 'Operations Expert', user: req.user }));
 
 // ======================= ADMIN ROUTES =======================
 app.get('/admin', (req, res) => res.render('admin_login', { title: 'Admin Login', error: null }));
