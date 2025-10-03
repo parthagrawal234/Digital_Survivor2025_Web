@@ -49,13 +49,30 @@
         const readyCountEl = document.getElementById('ready-count');
         
         delegateList.innerHTML = ''; // Clear the list
-        const readyIds = Object.keys(readyDelegates);
+        const readyIds = Object.keys(readyDelegates || {});
         readyCountEl.textContent = readyIds.length;
 
-        readyIds.forEach(id => {
+        // Create list items for all possible delegates
+        ['1', '2', '3'].forEach(id => {
             const li = document.createElement('li');
-            li.className = 'flex items-center text-green-400';
-            li.innerHTML = `<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> ${id} - Ready`;
+            const isReady = readyIds.includes(id);
+            
+            li.className = `flex items-center ${isReady ? 'text-green-400' : 'text-gray-400'}`;
+            if (isReady) {
+                li.innerHTML = `
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg> 
+                    Delegate ${id} - Ready
+                `;
+            } else {
+                li.innerHTML = `
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Delegate ${id} - Waiting...
+                `;
+            }
             delegateList.appendChild(li);
         });
     });
@@ -67,6 +84,11 @@
         if (userRole === 'eng') roleUrl = '/role/eng';
         if (userRole === 'opera') roleUrl = '/role/opera';
         window.location.href = roleUrl;
+    });
+
+    // 4. Handle any errors
+    socket.on('error', (error) => {
+        console.error('Socket error:', error);
     });
 </script>
 </body>
