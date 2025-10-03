@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= title %></title>
     <link href="/stylesheets/output.css" rel="stylesheet">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;500&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
@@ -16,6 +14,9 @@
         pre { background-color: #111827; border: 1px solid #4f46e5; border-radius: 0.5rem; padding: 1rem; font-size: 0.875rem; white-space: pre-wrap; line-height: 1.5; }
         .form-input { width: 100%; max-width: 200px; margin-top: 0.5rem; padding: 0.5rem 1rem; background-color: rgba(31, 41, 55, 0.5); border: 1px solid #4338ca; border-radius: 0.5rem; outline: none; transition: all 0.2s; }
         .form-input:focus { box-shadow: 0 0 0 2px #818cf8; border-color: #818cf8; }
+        .form-input:disabled { background-color: rgba(55, 65, 81, 0.5); cursor: not-allowed; }
+        .submit-btn { padding: 0.5rem 1rem; border-radius: 0.375rem; font-size: 0.875rem; font-weight: 600; transition: background-color 0.2s; }
+        .submit-btn:disabled { background-color: #374151; cursor: not-allowed; opacity: 0.5; }
     </style>
 </head>
 <body class="bg-gray-900 text-white antialiased">
@@ -28,9 +29,7 @@
                 <p class="text-xs text-gray-400">Delegate: <span class="font-medium text-gray-300"><%= user.delegateId %></span></p>
             </div>
             <form action="/api/logout" method="POST">
-                <button type="submit" class="bg-red-600/80 hover:bg-red-700/80 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300 text-sm backdrop-blur-sm">
-                    Logout
-                </button>
+                <button type="submit" class="bg-red-600/80 hover:bg-red-700/80 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300 text-sm backdrop-blur-sm">Logout</button>
             </form>
         </div>
     </header>
@@ -42,9 +41,7 @@
             <h1 class="font-orbitron text-4xl font-bold text-purple-400">Engineer</h1>
             <p class="mt-2 text-lg text-gray-300">Welcome, Delegate <span class="font-bold text-white"><%= user.delegateId %></span>.</p>
             <p class="mt-4 text-gray-400 max-w-lg mx-auto">The hardware is unstable. Your expertise is required to prevent a critical failure.</p>
-            <button onclick="enterStory()" class="mt-8 inline-block bg-purple-600 hover:bg-purple-700 text-white font-bold text-lg px-8 py-3 rounded-lg shadow-lg shadow-purple-600/20 transform hover:scale-105 transition-all duration-300">
-                Begin Mission
-            </button>
+            <button onclick="enterStory()" class="mt-8 inline-block bg-purple-600 hover:bg-purple-700 text-white font-bold text-lg px-8 py-3 rounded-lg shadow-lg shadow-purple-600/20 transform hover:scale-105 transition-all duration-300">Begin Mission</button>
         </div>
 
         <div id="storyPage" class="max-w-4xl w-full bg-gray-900/50 backdrop-blur-sm border border-purple-500/30 rounded-2xl shadow-2xl shadow-purple-500/10 p-8 md:p-12 hidden">
@@ -53,9 +50,7 @@
                 <div class="text-left">
                     <h2 class="font-orbitron text-2xl font-bold text-purple-400 mb-4">Mission Briefing...</h2>
                     <p id="storyText" class="text-gray-300 leading-relaxed min-h-[150px]"></p>
-                    <button onclick="enterSimulation()" class="mt-6 font-bold bg-purple-500/20 hover:bg-purple-500/40 text-purple-300 py-2 px-6 rounded-lg transition-colors">
-                        Start Analysis
-                    </button>
+                    <button onclick="enterSimulation()" class="mt-6 font-bold bg-purple-500/20 hover:bg-purple-500/40 text-purple-300 py-2 px-6 rounded-lg transition-colors">Start Analysis</button>
                 </div>
             </div>
         </div>
@@ -65,203 +60,9 @@
                 <h1 class="font-orbitron text-3xl font-bold text-purple-400">Engineering Analysis</h1>
                 <div id="timer" class="font-orbitron text-xl font-bold bg-purple-500/10 text-purple-300 px-4 py-2 rounded-lg border border-purple-500/30">20:00</div>
             </div>
-            <form id="quizForm" class="space-y-8 overflow-y-auto max-h-[60vh] pr-4">
-                <div>
-                    <label class="block text-md text-gray-300">
-                 
-        Q1: The Crown Protocol Security System (2149) – In the year 2149, Nexus Core governs humanity through Surveillance Gates that monitor night-cycle intrusions.<br> 
-        Night-cycle (N=1) and Recon Drone detects intruders (V=1). <br>
-        Phantom Operative nearby (P=1) and Manual Override by Nexus (M=1) can force activation. <br>
-        Write the Boolean expression for when the gates should activate.<br>
-        (5 Points)<br>
-
-        <br>
-        Options:<br>
-        A) Y = (N . V) + P + M<br>
-        B) Y = (N + V) . P + M<br>
-        C) Y = (N . V) + P . M<br>
-        D) Y = (N + V) + P . M
-      </label>
-                    <input type="text" name="q1" class="form-input" placeholder="Enter A, B, C, or D">
-                    <div class="mt-2"><button type="button" onclick="getHint('q1', event)" class="text-xs font-semibold text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 px-3 py-1 rounded-md">Get Hint (-5 pts)</button><p id="hint-q1" class="text-xs text-gray-400 mt-1 italic"></p></div>
-                </div>
-                <div>
-                    <label class="block text-md text-gray-300">
-        Q2: Phantoms encounter a data-lock circuit guarding AI King's firewall. <br>
-        Four inputs: A & B from rebel keys, C & D from Nexus nodes. Output Q decides firewall opening.<br>
-         Derive Boolean expression for Q.<br>
-         (5 Points)<br>
-        <br>
-        <img src="gate.jpg" alt="logic gate" class="quiz-image">
-        Options:<br>
-        A) Q=(A+B)'.(CD)'<br>
-        B) Q=(A+B)+(CD)<br>
-        C) Q=(A+B).(CD)'<br>
-        D) Q=(A.B)'.(C+D)
-      </label>
-                    <input type="text" name="q2" class="form-input" placeholder="Enter A, B, C, or D">
-                    <div class="mt-2"><button type="button" onclick="getHint('q2', event)" class="text-xs font-semibold text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 px-3 py-1 rounded-md">Get Hint (-5 pts)</button><p id="hint-q2" class="text-xs text-gray-400 mt-1 italic"></p></div>
-                </div>
-                <div>
-                    <label class="block text-md text-gray-300">
-                     Q3: Analyze the following C program that modifies an array. Output the final array after the loop.<br>
-        (4 Points)<br>
-<pre><code>
-int main() {<br>
-    int arr[7] = {1,2,3,4,5,6,7};<br>
-    for(int i=0;i<7;i++){<br>
-        if(i%2==0) <br>
-        arr[i] = arr[i]*2;<br>
-        else <br>
-        arr[i] = arr[i]-1;<br>
-    }<br>
-    for(int i=0;i<7;i++) <br>
-    printf("%d ",arr[i]);<br>
-    return 0;
-}
-</code></pre>
-Options:<br>
-A) 2 1 6 3 10 5 14<br>
-B) 1 1 2 3 4 5 6<br>
-C) 2 2 6 4 10 6 14<br>
-D) 1 2 3 4 5 6 7
-      </label>
-                    <input type="text" name="q3" class="form-input" placeholder="Enter A, B, C, or D">
-                    <div class="mt-2"><button type="button" onclick="getHint('q3', event)" class="text-xs font-semibold text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 px-3 py-1 rounded-md">Get Hint (-5 pts)</button><p id="hint-q3" class="text-xs text-gray-400 mt-1 italic"></p></div>
-                </div>
-                <div>
-                    <label class="block text-md text-gray-300">
- Q4:What is the output of the program<br>
-        (3 Points)<br>
-<pre><code>
-
-        int main() { <br>
-
-    int i, j, sum = 0; <br>
-    for (i = 1; i <= 4; i++) { <br>
-        for (j = 1; j <= 4; j++) { <br>
-            if ((i + j) % 2 == 0) continue; <br>
-            if (i * j > 10) break; <br>
-            sum += i * j - (i + j); <br>
-        } <br>
-    } <br>
-    printf("%d\n", sum);<br> 
-     return 0; <br>
-} 
-<br><br>
- 
-
-Options: <br>
-A) -10 <br>
-B) -2 <br>
-C) 0 <br>
-D) 10 <br>
-      </label>
-                    <input type="text" name="q4" class="form-input" placeholder="Enter A, B, C, or D">
-                    <div class="mt-2"><button type="button" onclick="getHint('q4', event)" class="text-xs font-semibold text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 px-3 py-1 rounded-md">Get Hint (-5 pts)</button><p id="hint-q4" class="text-xs text-gray-400 mt-1 italic"></p></div>
-                </div>
-                <div>
-                    <label class="block text-md text-gray-300">
- Q5:What will be the output ? <br>
-        (4 Points)<br>
-<pre><code>
-int main() { <br>
-    char str[10] = "CSE"; <br>
-    printf("%d %d\n", (int)sizeof(str), (int)strlen(str)); <br>
-    strcpy(str + 2, str);   <br>
-    printf("%s\n", str); <br>
-     printf("%c %c %c\n", str[0], str[2], str[5]); <br>
-    return 0; <br>
-} <br><br>
-
-Options: <br>
-
-A) <br>
-
-10 3 <br>
-CSEDE <br>
-C S D <br>
- 
-
-B) <br>
-
-10 3 <br>
-CSE <br>
-C S E <br>
- 
-
-C) <br>
-
-10 3 <br>
-CSEDE <br>
-C S E <br>
- 
-
-D) <br>
-
-10 5 <br>
-CSEDE <br>
-C S D <br>
-
- 
-      </label>
-                    <input type="text" name="q5" class="form-input" placeholder="Enter A, B, C, or D">
-                    <div class="mt-2"><button type="button" onclick="getHint('q5', event)" class="text-xs font-semibold text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 px-3 py-1 rounded-md">Get Hint (-5 pts)</button><p id="hint-q5" class="text-xs text-gray-400 mt-1 italic"></p></div>
-                </div>
-                <div>
-                    <label class="block text-md text-gray-300">
-Q6: What is the code for this output?<br>
-        (4 Points)<br>
-
-   <br> * <br>
-
-  <br><br> *** <br>
-
- <br><br> ***** <br>
-
-<br><br>******* <br>
-<pre><code>
-A) <br>
-
-for(int i=1;i<=4;i++){ <br>
-    for(int j=1;j<=4-i;j++) <br>
-        printf(" "); <br>
-    for(int j=1;j<=2*i-1;j++) <br>
-    printf("*"); <br>
-    printf("\n"); <br>
-} <br>
-
-B) <br>
-
-for(int i=1;i<=4;i++){ <br>
-    for(int j=1;j<=i;j++) <br>
-    printf(" "); <br>
-    for(int j=1;j<=2*i-1;j++) <br>
-        printf("*"); <br>
-    printf("\n"); <br>
-} <br>
-
-C) <br>
-
-int i,j; <br>
-for(i=1;i<=4;i++){ <br>
-    for(j=1;j<=4-i;j++) <br>
-       printf(" "); <br>
-    for(j=1;j<=2*i-1;j++) <br>
-       printf("*"); <br>
-    printf("\n"); <br>
-
-} <br>
-
-D) Both A and C <br>
-      </label>
-                    <input type="text" name="q6" class="form-input" placeholder="Enter A, B, C, or D">
-                    <div class="mt-2"><button type="button" onclick="getHint('q6', event)" class="text-xs font-semibold text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 px-3 py-1 rounded-md">Get Hint (-5 pts)</button><p id="hint-q6" class="text-xs text-gray-400 mt-1 italic"></p></div>
-                </div>
-                <button type="button" onclick="submitAnswers()" class="w-full mt-6 font-bold text-lg text-white bg-purple-600 hover:bg-purple-700 py-3 rounded-lg transition-all duration-300">
-                    Submit Analysis
-                </button>
-            </form>
+            <div class="space-y-8 overflow-y-auto max-h-[60vh] pr-4" id="questions-container">
+                <!-- Dynamically generated questions -->
+            </div>
             <p id="result" class="text-center text-sm mt-4 min-h-[20px]"></p>
         </div>
     </main>
@@ -269,7 +70,55 @@ D) Both A and C <br>
 <script>
     let startTime;
     let timerInterval;
+    let teamSolvedQuestions = [];
+    const totalQuestions = 6;
     const storyContent = `Engineer's Mission: The simulation begins to break apart into raw structures: firewalls disguised as logic gates, traps hidden in lines of code. You must debug the illusion itself — writing and rewriting commands to bend Nexus Core’s architecture back against itself. Every successful solution rewires a piece of the false world.`;
+
+    const questions = [
+        { id: 'q1', text: 'Q1: The Crown Protocol Security System... Write the Boolean expression for when the gates should activate.' },
+        { id: 'q2', text: 'Q2: Phantoms encounter a data-lock circuit... Derive Boolean expression for Q.' },
+        { id: 'q3', text: 'Q3: Analyze the C program that modifies an array...' },
+        { id: 'q4', text: 'Q4: Examine integer division in C.' },
+        { id: 'q5', text: 'Q5: Analyze this sum calculation in a loop.' },
+        { id: 'q6', text: 'Q6: Array out-of-bounds issue.' }
+    ];
+
+    function buildQuestions() {
+        const container = document.getElementById('questions-container');
+        container.innerHTML = '';
+        questions.forEach(q => {
+            container.innerHTML += `
+                <div id="${q.id}-container" class="p-4 border border-gray-700 rounded-lg">
+                    <label class="block text-md text-gray-300">${q.text}</label>
+                    <div class="flex items-center gap-4 mt-2">
+                        <input type="text" id="${q.id}-input" class="form-input" placeholder="Enter A, B, C, or D">
+                        <button type="button" id="${q.id}-submit" onclick="submitAnswer('${q.id}')" class="submit-btn bg-purple-600 hover:bg-purple-700 text-white">Submit</button>
+                    </div>
+                    <p id="${q.id}-feedback" class="text-xs mt-1 min-h-[16px]"></p>
+                    <div class="mt-2">
+                        <button type="button" id="${q.id}-hint-btn" onclick="getHint('${q.id}')" class="text-xs font-semibold text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 px-3 py-1 rounded-md">Get Hint (-5 pts)</button>
+                        <p id="${q.id}-hint" class="text-xs text-gray-400 mt-1 italic"></p>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        buildQuestions();
+        const progressRes = await fetch('/api/get-progress');
+        const progress = await progressRes.json();
+        if (progress.solvedQuestions) {
+            teamSolvedQuestions = progress.solvedQuestions;
+            teamSolvedQuestions.forEach(qId => {
+                // Only lock questions that are part of this role's quiz
+                if (questions.some(q => q.id === qId)) {
+                    lockQuestion(qId, 'Already Solved');
+                }
+            });
+            checkIfAllSolved();
+        }
+    });
 
     function typeWriter(text, element, delay = 20) {
         let i = 0;
@@ -312,14 +161,23 @@ D) Both A and C <br>
             timerElement.textContent = `${minutes}:${seconds}`;
             if (timeLeft <= 0) {
                 clearInterval(timerInterval);
-                submitAnswers();
+                endMission();
             }
         }, 1000);
     }
-    
-    async function getHint(questionId, event) {
-        const hintButton = event.target;
-        const hintElement = document.getElementById(`hint-${questionId}`);
+
+    function lockQuestion(questionId, feedbackText) {
+        document.getElementById(`${questionId}-input`).disabled = true;
+        document.getElementById(`${questionId}-submit`).disabled = true;
+        document.getElementById(`${questionId}-hint-btn`).style.display = 'none';
+        const feedbackEl = document.getElementById(`${questionId}-feedback`);
+        feedbackEl.textContent = feedbackText;
+        feedbackEl.className = 'text-xs mt-1 text-green-400';
+    }
+
+    async function getHint(questionId) {
+        const hintButton = document.getElementById(`${questionId}-hint-btn`);
+        const hintElement = document.getElementById(`${questionId}-hint`);
         try {
             const response = await fetch('/api/get-hint', {
                 method: 'POST',
@@ -340,40 +198,49 @@ D) Both A and C <br>
         }
     }
 
-    async function submitAnswers() {
+    async function submitAnswer(questionId) {
+        const input = document.getElementById(`${questionId}-input`);
+        const feedbackEl = document.getElementById(`${questionId}-feedback`);
+        const answer = input.value;
+        const response = await fetch('/api/check-answer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ questionId, answer })
+        });
+        const result = await response.json();
+        if (result.correct) {
+            lockQuestion(questionId, 'Correct!');
+            if (!teamSolvedQuestions.includes(questionId)) {
+                teamSolvedQuestions.push(questionId);
+            }
+            checkIfAllSolved();
+        } else {
+            feedbackEl.textContent = 'Incorrect. Try again.';
+            feedbackEl.className = 'text-xs mt-1 text-red-400';
+            setTimeout(() => feedbackEl.textContent = '', 2000);
+        }
+    }
+
+    function checkIfAllSolved() {
+        const roleQuestions = questions.map(q => q.id);
+        const solvedRoleQuestions = teamSolvedQuestions.filter(qId => roleQuestions.includes(qId));
+        if (solvedRoleQuestions.length >= totalQuestions) {
+            endMission();
+        }
+    }
+
+    async function endMission() {
         clearInterval(timerInterval);
         const timeTakenSec = Math.floor((Date.now() - startTime) / 1000);
-        const form = document.getElementById("quizForm");
-        const resultEl = document.getElementById("result");
-        const answers = {};
-        for (const element of form.elements) {
-            if (element.name) {
-                answers[element.name] = element.value.trim();
-            }
-        }
-        const payload = { role: "eng", answers: answers, timeTakenSec: timeTakenSec };
-        try {
-            const response = await fetch("/api/submit-progress", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            });
-            const data = await response.json();
-            if (response.ok) {
-                resultEl.className = 'text-center text-sm mt-4 text-green-400';
-                resultEl.textContent = `Analysis complete. Final Score: ${data.score}. Awaiting team...`;
-                setTimeout(() => { window.location.href = "/post-mission-wait"; }, 2000);
-            } else {
-                resultEl.className = 'text-center text-sm mt-4 text-red-400';
-                resultEl.textContent = data.message || 'Submission failed.';
-            }
-        } catch (error) {
-            resultEl.className = 'text-center text-sm mt-4 text-red-400';
-            resultEl.textContent = 'A network error occurred.';
-        }
+        await fetch('/api/end-mission', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ timeTakenSec })
+        });
+        document.getElementById('result').textContent = 'All questions attempted. Awaiting team...';
+        setTimeout(() => window.location.href = '/post-mission-wait', 2000);
     }
 </script>
 </body>
 </html>
-
 

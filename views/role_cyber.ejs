@@ -13,12 +13,13 @@
         .font-orbitron { font-family: 'Orbitron', sans-serif; }
         .fade-in { animation: fadeInAnimation 1s ease-in-out forwards; }
         @keyframes fadeInAnimation { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .form-input:disabled { background-color: rgba(55, 65, 81, 0.5); cursor: not-allowed; }
+        .submit-btn:disabled { background-color: #374151; cursor: not-allowed; opacity: 0.5; }
     </style>
 </head>
 <body class="bg-gray-900 text-white antialiased">
     <div class="fixed inset-0 z-[-1] bg-gradient-to-br from-gray-900 via-[#0b1029] to-cyan-900"></div>
 
-    <!-- NEW: Persistent Header with Logout Button -->
     <header class="absolute top-0 left-0 w-full p-4 md:p-6 z-20">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div>
@@ -26,9 +27,7 @@
                 <p class="text-xs text-gray-400">Delegate: <span class="font-medium text-gray-300"><%= user.delegateId %></span></p>
             </div>
             <form action="/api/logout" method="POST">
-                <button type="submit" class="bg-red-600/80 hover:bg-red-700/80 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300 text-sm backdrop-blur-sm">
-                    Logout
-                </button>
+                <button type="submit" class="bg-red-600/80 hover:bg-red-700/80 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300 text-sm backdrop-blur-sm">Logout</button>
             </form>
         </div>
     </header>
@@ -40,9 +39,7 @@
             <h1 class="font-orbitron text-4xl font-bold text-cyan-400">Cybersecurity Expert</h1>
             <p class="mt-2 text-lg text-gray-300">Welcome, Delegate <span class="font-bold text-white"><%= user.delegateId %></span>.</p>
             <p class="mt-4 text-gray-400 max-w-lg mx-auto">Your mission briefing is ready. The integrity of our network is in your hands.</p>
-            <button onclick="enterStory()" class="mt-8 inline-block bg-cyan-500 hover:bg-cyan-600 text-gray-900 font-bold text-lg px-8 py-3 rounded-lg shadow-lg shadow-cyan-500/20 transform hover:scale-105 transition-all duration-300">
-                Begin Mission
-            </button>
+            <button onclick="enterStory()" class="mt-8 inline-block bg-cyan-500 hover:bg-cyan-600 text-gray-900 font-bold text-lg px-8 py-3 rounded-lg shadow-lg shadow-cyan-500/20 transform hover:scale-105 transition-all duration-300">Begin Mission</button>
         </div>
 
         <div id="storyPage" class="max-w-4xl w-full bg-gray-900/50 backdrop-blur-sm border border-cyan-500/30 rounded-2xl shadow-2xl shadow-cyan-500/10 p-8 md:p-12 hidden">
@@ -51,9 +48,7 @@
                 <div class="text-left">
                     <h2 class="font-orbitron text-2xl font-bold text-cyan-400 mb-4">Incoming Transmission...</h2>
                     <p id="storyText" class="text-gray-300 leading-relaxed min-h-[150px]"></p>
-                    <button onclick="enterSimulation()" class="mt-6 font-bold bg-cyan-500/20 hover:bg-cyan-500/40 text-cyan-300 py-2 px-6 rounded-lg transition-colors">
-                        Start Analysis
-                    </button>
+                    <button onclick="enterSimulation()" class="mt-6 font-bold bg-cyan-500/20 hover:bg-cyan-500/40 text-cyan-300 py-2 px-6 rounded-lg transition-colors">Start Analysis</button>
                 </div>
             </div>
         </div>
@@ -63,22 +58,23 @@
                 <h1 class="font-orbitron text-3xl font-bold text-cyan-400">Cybersecurity Analysis</h1>
                 <div id="timer" class="font-orbitron text-xl font-bold bg-cyan-500/10 text-cyan-300 px-4 py-2 rounded-lg border border-cyan-500/30">20:00</div>
             </div>
-            <form id="quizForm" class="space-y-6">
-                <div>
-                    <label for="q1" class="block text-lg text-gray-300 leading-relaxed">
+            <div class="space-y-6" id="questions-container">
+                 <div id="q1-container" class="p-4 border border-gray-700 rounded-lg">
+                    <label for="q1-input" class="block text-lg text-gray-300 leading-relaxed">
                         A U.S. official announced a regional security partnership with Latin America. The information once lived on the Department of State’s website, but today the page looks completely different. Rumor has it, back in 2009, a sidebar on that site contained a travel update about the Secretary’s visit abroad. Can you find which country was mentioned in that travel update?
                     </label>
                     <p class="text-xs text-cyan-400/70 mt-2">Flag format: CSS{Country_Name}</p>
-                    <input type="text" id="q1" name="q1" class="w-full mt-4 px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none" placeholder="Enter your answer...">
+                    <div class="flex items-center gap-4 mt-2">
+                        <input type="text" id="q1-input" class="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none" placeholder="Enter your answer...">
+                        <button type="button" id="q1-submit" onclick="submitAnswer('q1')" class="submit-btn text-sm font-semibold bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-3 rounded-md">Submit</button>
+                    </div>
+                    <p id="q1-feedback" class="text-xs mt-1 min-h-[16px]"></p>
                     <div class="mt-2">
-                        <button type="button" onclick="getHint('q1', event)" class="text-xs font-semibold text-cyan-300 bg-cyan-500/10 hover:bg-cyan-500/20 px-3 py-1 rounded-md transition-colors">Get Hint (-5 pts)</button>
-                        <p id="hint-q1" class="text-xs text-gray-400 mt-1 italic"></p>
+                        <button type="button" id="q1-hint-btn" onclick="getHint('q1')" class="text-xs font-semibold text-cyan-300 bg-cyan-500/10 hover:bg-cyan-500/20 px-3 py-1 rounded-md">Get Hint (-5 pts)</button>
+                        <p id="q1-hint" class="text-xs text-gray-400 mt-1 italic"></p>
                     </div>
                 </div>
-                <button type="button" onclick="submitAnswers()" class="w-full font-bold text-lg text-slate-900 bg-cyan-500 hover:bg-cyan-600 py-3 rounded-lg transition-all duration-300">
-                    Submit Analysis
-                </button>
-            </form>
+            </div>
             <p id="result" class="text-center text-sm mt-4 min-h-[20px]"></p>
         </div>
     </main>
@@ -86,18 +82,30 @@
 <script>
     let startTime;
     let timerInterval;
+    let teamSolvedQuestions = [];
+    const totalQuestions = 1;
     const storyContent = `The first round was a physical breach, but the real war is digital. While your team secured the asset, a ghost program was released into our network—a sophisticated data worm we're calling "Cerberus." Standard firewalls are useless. Your mission is not to delete it—that would be too noisy. You must perform a digital lobotomy. Your task is to analyze network traffic, identify the command nodes of Cerberus, and sever their connection to the main hive. You are the scalpel in this operation.`;
 
-    function typeWriter(text, element, delay = 20) {
-        let i = 0;
-        element.innerHTML = "";
-        function typing() {
-            if (i < text.length) {
-                element.innerHTML += text.charAt(i);
-                i++;
-                setTimeout(typing, delay);
-            }
+    document.addEventListener('DOMContentLoaded', async () => {
+        const progressRes = await fetch('/api/get-progress');
+        const progress = await progressRes.json();
+        if (progress.solvedQuestions) {
+            teamSolvedQuestions = progress.solvedQuestions;
+            teamSolvedQuestions.forEach(qId => lockQuestion(qId, 'Already Solved'));
+            checkIfAllSolved();
         }
+    });
+
+    function typeWriter(text, element, delay = 20) {
+        let i = 0; 
+        element.innerHTML = ""; 
+        function typing() { 
+            if (i < text.length) { 
+                element.innerHTML += text.charAt(i); 
+                i++; 
+                setTimeout(typing, delay); 
+            } 
+        } 
         typing();
     }
 
@@ -129,14 +137,23 @@
             timerElement.textContent = `${minutes}:${seconds}`;
             if (timeLeft <= 0) {
                 clearInterval(timerInterval);
-                submitAnswers();
+                endMission();
             }
         }, 1000);
     }
 
-    async function getHint(questionId, event) {
-        const hintButton = event.target;
-        const hintElement = document.getElementById(`hint-${questionId}`);
+    function lockQuestion(questionId, feedbackText) {
+        document.getElementById(`${questionId}-input`).disabled = true;
+        document.getElementById(`${questionId}-submit`).disabled = true;
+        document.getElementById(`${questionId}-hint-btn`).style.display = 'none';
+        const feedbackEl = document.getElementById(`${questionId}-feedback`);
+        feedbackEl.textContent = feedbackText;
+        feedbackEl.className = 'text-xs mt-1 text-green-400';
+    }
+
+    async function getHint(questionId) {
+        const hintButton = document.getElementById(`${questionId}-hint-btn`);
+        const hintElement = document.getElementById(`${questionId}-hint`);
         try {
             const response = await fetch('/api/get-hint', {
                 method: 'POST',
@@ -146,8 +163,8 @@
             const data = await response.json();
             if (response.ok) {
                 hintElement.textContent = `Hint: ${data.hint}`;
-                hintButton.disabled = true;
-                hintButton.textContent = 'Hint Used';
+                hintButton.disabled = true; 
+                hintButton.textContent = 'Hint Used'; 
                 hintButton.classList.add('opacity-50', 'cursor-not-allowed');
             } else {
                 hintElement.textContent = data.message || 'Could not retrieve hint.';
@@ -157,31 +174,43 @@
         }
     }
 
-    async function submitAnswers() {
+    async function submitAnswer(questionId) {
+        const input = document.getElementById(`${questionId}-input`);
+        const feedbackEl = document.getElementById(`${questionId}-feedback`);
+        const answer = input.value;
+        const response = await fetch('/api/check-answer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ questionId, answer })
+        });
+        const result = await response.json();
+        if (result.correct) {
+            lockQuestion(questionId, 'Correct!');
+            if (!teamSolvedQuestions.includes(questionId)) teamSolvedQuestions.push(questionId);
+            checkIfAllSolved();
+        } else {
+            feedbackEl.textContent = 'Incorrect. Try again.';
+            feedbackEl.className = 'text-xs mt-1 text-red-400';
+            setTimeout(() => feedbackEl.textContent = '', 2000);
+        }
+    }
+
+    function checkIfAllSolved() {
+        if (teamSolvedQuestions.length >= totalQuestions) {
+            endMission();
+        }
+    }
+
+    async function endMission() {
         clearInterval(timerInterval);
         const timeTakenSec = Math.floor((Date.now() - startTime) / 1000);
-        const userAnswer = document.getElementById("q1").value.trim();
-        const resultEl = document.getElementById("result");
-        const payload = { role: "cyber", answers: { q1: userAnswer }, timeTakenSec: timeTakenSec };
-        try {
-            const response = await fetch("/api/submit-progress", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            });
-            const data = await response.json();
-            if (response.ok) {
-                resultEl.className = 'text-center text-sm mt-4 text-green-400';
-                resultEl.textContent = `Analysis complete. Final Score: ${data.score}. Awaiting team...`;
-                setTimeout(() => { window.location.href = "/post-mission-wait"; }, 2000);
-            } else {
-                resultEl.className = 'text-center text-sm mt-4 text-red-400';
-                resultEl.textContent = data.message || 'Submission failed.';
-            }
-        } catch (error) {
-            resultEl.className = 'text-center text-sm mt-4 text-red-400';
-            resultEl.textContent = 'A network error occurred.';
-        }
+        await fetch('/api/end-mission', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ timeTakenSec })
+        });
+        document.getElementById('result').textContent = 'All questions attempted. Awaiting team...';
+        setTimeout(() => window.location.href = '/post-mission-wait', 2000);
     }
 </script>
 </body>

@@ -25,7 +25,6 @@ const delegateSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
-    // MOVED: Location is now tracked per delegate
     lastKnownLocation: {
         type: String,
         default: '/dashboard'
@@ -43,6 +42,11 @@ const userSchema = new mongoose.Schema({
         required: [true, 'Password is required.']
     },
     delegates: [delegateSchema],
+    // MOVED: solvedQuestions is now at the team level
+    solvedQuestions: {
+        type: [String],
+        default: []
+    },
     visitCount: {
         type: Number,
         default: 0
@@ -53,7 +57,6 @@ const userSchema = new mongoose.Schema({
     round3EndTime: {
         type: Date
     }
-    // REMOVED: lastKnownLocation is no longer here
 });
 
 module.exports = mongoose.model('User', userSchema);

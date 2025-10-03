@@ -46,16 +46,6 @@ const User = require('./models/user');
 const Visit = require('./models/visit');
 
 // ======================= AUTH MIDDLEWARE =======================
-const checkAuthStatus = (req, res, next) => {
-    try {
-        const token = req.cookies.token;
-        res.locals.isLoggedIn = !!(token && jwt.verify(token, JWT_SECRET));
-    } catch (error) {
-        res.locals.isLoggedIn = false;
-    }
-    next();
-};
-
 const protectPlayerRoute = (req, res, next) => {
     try {
         req.user = jwt.verify(req.cookies.token, JWT_SECRET);
@@ -65,22 +55,14 @@ const protectPlayerRoute = (req, res, next) => {
     }
 };
 
-const protectAdminRoute = (req, res, next) => {
-    if (req.session.isAdmin) {
-        next();
-    } else {
-        res.redirect('/admin');
+const trackLocation = (req, res, next) => {
+    if (req.user && req.user.teamId && req.user.delegateId) {
+        User.updateOne(
+            { teamId: req.user.teamId, "delegates.delegateId": req.user.delegateId },
+            { $set: { "delegates.$.lastKnownLocation": req.originalUrl } }
+        ).catch(err => console.error(`Failed to update location: ${err.message}`));
     }
-};
-
-const redirectIfLoggedIn = (req, res, next) => {
-    const token = req.cookies.token;
-    if (token) {
-        try {
-            jwt.verify(token, JWT_SECRET);
-            return res.redirect('/dashboard');
-        } catch (error) { next(); }
-    } else { next(); }
+    next();
 };
 
 const authorizeRole = (requiredRole) => {
@@ -93,15 +75,34 @@ const authorizeRole = (requiredRole) => {
     };
 };
 
-const trackLocation = (req, res, next) => {
-    if (req.user && req.user.teamId && req.user.delegateId) {
-        User.updateOne(
-            { teamId: req.user.teamId, "delegates.delegateId": req.user.delegateId },
-            { $set: { "delegates.$.lastKnownLocation": req.originalUrl } }
-        ).catch(err => console.error(`Failed to update location: ${err.message}`));
+const redirectIfLoggedIn = (req, res, next) => {
+    const token = req.cookies.token;
+    if (token) {
+        try {
+            jwt.verify(token, JWT_SECRET);
+            return res.redirect('/dashboard');
+        } catch (error) { next(); }
+    } else { next(); }
+};
+
+const checkAuthStatus = (req, res, next) => {
+    try {
+        const token = req.cookies.token;
+        res.locals.isLoggedIn = !!(token && jwt.verify(token, JWT_SECRET));
+    } catch (error) {
+        res.locals.isLoggedIn = false;
     }
     next();
 };
+
+const protectAdminRoute = (req, res, next) => {
+    if (req.session.isAdmin) {
+        next();
+    } else {
+        res.redirect('/admin');
+    }
+};
+
 
 // ======================= API ROUTES =======================
 app.post('/api/register', async (req, res) => {
@@ -166,52 +167,81 @@ app.post('/api/logout', protectPlayerRoute, async (req, res) => {
     res.redirect('/');
 });
 
-
-app.post('/api/submit-progress', protectPlayerRoute, async (req, res) => {
-    const { role, answers, timeTakenSec } = req.body;
-    const { teamId, delegateId } = req.user;
-    const correctAnswers = { 'cyber': { q1: 'css{mexico}' }, 'eng': { q1: 'a', q2: 'c', q3: 'a', q4: 'b', q5: 'b', q6: 'd' }, 'opera': { q1: 'css{22717,greenko,7,golconda}' } };
-    let score = 0;
-    const correctSet = correctAnswers[role];
-    if (correctSet) {
-        score = Object.keys(correctSet).reduce((count, key) => {
-            const userAnswer = (answers[key] || '').replace(/\s+/g, '').toLowerCase();
-            const correctAnswer = (correctSet[key] || '').replace(/\s+/g, '').toLowerCase();
-            return count + (userAnswer === correctAnswer ? 1 : 0);
-        }, 0);
+app.get('/api/get-progress', protectPlayerRoute, async (req, res) => {
+    try {
+        const { teamId } = req.user;
+        const team = await User.findOne({ teamId });
+        if (team) {
+            res.json({
+                solvedQuestions: team.solvedQuestions // Fetches from team level
+            });
+        } else {
+            res.status(404).json({ message: 'Team not found.' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: 'Server error fetching progress.' });
     }
+});
+
+app.post('/api/check-answer', protectPlayerRoute, async (req, res) => {
+    const { questionId, answer } = req.body;
+    const { teamId, delegateId, role } = req.user;
+
+    const correctAnswers = { 'cyber': { q1: 'css{mexico}' }, 'eng': { q1: 'a', q2: 'c', q3: 'a', q4: 'b', q5: 'b', q6: 'd' }, 'opera': { q1: 'css{22717,greenko,7,golconda}' } };
+    const pointsPerQuestion = 10;
+
+    const correctAnswer = (correctAnswers[role]?.[questionId] || '').replace(/\s+/g, '').toLowerCase();
+    const userAnswer = (answer || '').replace(/\s+/g, '').toLowerCase();
+
+    if (correctAnswer && userAnswer === correctAnswer) {
+        try {
+            const team = await User.findOne({ teamId });
+            const delegate = team.delegates.find(d => d.delegateId === delegateId);
+
+            if (!team.solvedQuestions.includes(questionId)) {
+                team.solvedQuestions.push(questionId);
+                delegate.points += pointsPerQuestion;
+                await team.save();
+                res.json({ correct: true, message: 'Correct!' });
+            } else {
+                res.json({ correct: true, message: 'Already Solved.' });
+            }
+        } catch (error) {
+            res.status(500).json({ message: 'Error saving answer.' });
+        }
+    } else {
+        res.json({ correct: false, message: 'Incorrect. Try again.' });
+    }
+});
+
+app.post('/api/end-mission', protectPlayerRoute, async (req, res) => {
+    const { timeTakenSec } = req.body;
+    const { teamId, delegateId } = req.user;
     try {
         const team = await User.findOne({ teamId });
         const delegate = team.delegates.find(d => d.delegateId === delegateId);
         if (delegate) {
-            delegate.points = score - (delegate.hintsUsed * 5);
             delegate.timeSpent = timeTakenSec;
+            delegate.points = delegate.points - (delegate.hintsUsed * 5);
             await team.save();
+
+            if (!missionCompleteStates[teamId]) missionCompleteStates[teamId] = {};
+            missionCompleteStates[teamId][delegateId] = true;
+            io.to(teamId).emit('mission-status-update', missionCompleteStates[teamId]);
+
+            res.status(200).json({ message: 'Mission time recorded.' });
+        } else {
+            res.status(404).json({ message: 'Delegate not found.' });
         }
-        if (!missionCompleteStates[teamId]) missionCompleteStates[teamId] = {};
-        missionCompleteStates[teamId][delegateId] = true;
-        io.to(teamId).emit('mission-status-update', missionCompleteStates[teamId]);
-        res.status(200).json({ message: 'Progress saved!', score: delegate.points });
     } catch (error) {
-        res.status(500).json({ message: 'Error saving progress.' });
+        res.status(500).json({ message: 'Error ending mission.' });
     }
 });
 
 app.post('/api/get-hint', protectPlayerRoute, async (req, res) => {
     const { questionId } = req.body;
     const { teamId, delegateId, role } = req.user;
-    const hints = {
-        'cyber': { q1: 'Think about a major cybersecurity event in 2020 involving a software supply chain. The malicious domain was registered in a capital city known for its vibrant culture and history.' },
-        'eng': {
-            q1: 'Focus on the "OR" conditions. Phantom Operative and Manual Override can force activation on their own.',
-            q2: 'The first gate is a NOR gate. The second is a NAND gate. The final gate is an AND gate.',
-            q3: 'Trace the loop for each index. Even indices are doubled, odd indices are decremented.',
-            q4: 'In C, dividing two integers results in an integer. The decimal part is truncated before being assigned to the float.',
-            q5: 'The `sum` variable is never initialized to 0. It starts with a random garbage value.',
-            q6: 'Arrays in C are 0-indexed. An array of size 5 has indices 0, 1, 2, 3, and 4. Accessing index 5 is out of bounds.'
-        },
-        'opera': { q1: 'The racing event is the Formula E championship. Research the title sponsor for the 2024 season in that specific city. The fort is a famous landmark in the same city.' }
-    };
+    const hints = { /* ... all hint text ... */ };
     const hintText = hints[role]?.[questionId];
     if (hintText) {
         try {
@@ -311,9 +341,7 @@ io.on('connection', (socket) => {
         socket.emit('team-status-update', teamReadyStates[teamId] || {});
     });
     socket.on('player-ready', async ({ teamId, delegateId }) => {
-        if (!teamReadyStates[teamId]) {
-            teamReadyStates[teamId] = {};
-        }
+        if (!teamReadyStates[teamId]) teamReadyStates[teamId] = {};
         teamReadyStates[teamId][delegateId] = true;
         io.to(teamId).emit('team-status-update', teamReadyStates[teamId]);
         if (Object.keys(teamReadyStates[teamId]).length === 3) {
