@@ -299,15 +299,33 @@ io.on('connection', (socket) => {
         socket.emit('team-status-update', teamReadyStates[teamId] || {});
     });
     socket.on('player-ready', async ({ teamId, delegateId }) => {
-        if (!teamReadyStates[teamId]) teamReadyStates[teamId] = {};
+        console.log(`Player Ready - Team: ${teamId}, Delegate: ${delegateId}`);
+        
+        if (!teamReadyStates[teamId]) {
+            teamReadyStates[teamId] = {};
+        }
         teamReadyStates[teamId][delegateId] = true;
-        io.to(teamId).emit('team-status-update', teamReadyStates[teamId]);
-        if (Object.keys(teamReadyStates[teamId]).length === 3) {
-            await User.findOneAndUpdate({ teamId }, { round2StartTime: new Date() });
-            io.to(teamId).emit('start-mission');
-            delete teamReadyStates[teamId];
+        
+        // Log current ready states
+        console.log(`Team ${teamId} ready states:`, teamReadyStates[teamId]);
+        
+        // Check if all three players are ready
+        const team = await User.findOne({ teamId });
+        if (team) {
+            console.log(`Team ${teamId} has ${team.delegates.length} delegates`);
+            console.log(`Ready players: ${Object.keys(teamReadyStates[teamId]).length}`);
+            
+            if (team.delegates.length === Object.keys(teamReadyStates[teamId]).length) {
+                console.log(`All players ready for team ${teamId}, starting mission`);
+                io.to(teamId).emit('start-mission');
+                delete teamReadyStates[teamId];
+            } else {
+                console.log(`Waiting for more players - Team ${teamId}`);
+                socket.emit('go-to-waiting-room');
+            }
         } else {
-            socket.emit('go-to-waiting-room');
+            console.error(`Team ${teamId} not found in database`);
+            socket.emit('error', { message: 'Team not found' });
         }
     });
     socket.on('join-post-mission-room', async ({ teamId, delegateId }) => {

@@ -47,7 +47,11 @@
         const userRole = '<%= user.role %>';
         const socket = io();
 
+        // Join the team room immediately
+        socket.emit('join-team-room', { teamId, delegateId });
+
         socket.on('start-mission', () => {
+            console.log('Received start-mission event');
             let roleUrl = '/';
             if (userRole === 'cyber') roleUrl = '/role/cyber';
             if (userRole === 'eng') roleUrl = '/role/eng';
@@ -56,10 +60,17 @@
         });
 
         socket.on('go-to-waiting-room', () => {
+            console.log('Redirecting to waiting room');
             window.location.href = '/waiting';
         });
 
+        socket.on('error', (error) => {
+            console.error('Socket error:', error);
+            alert('An error occurred: ' + error.message);
+        });
+
         document.getElementById('startBtn').addEventListener('click', () => {
+            console.log('Emitting player-ready event');
             socket.emit('player-ready', { teamId, delegateId });
             const startBtn = document.getElementById('startBtn');
             startBtn.disabled = true;
