@@ -34,10 +34,7 @@ app.use(session({
     secret: process.env.SESSION_SECRET || 'admin_session_secret_key',
     resave: false,
     saveUninitialized: false,
-    store: MongoStore.create({ 
-        mongoUrl: mongoURI,
-        collectionName: 'sessions'
-    }),
+    store: MongoStore.create({ mongoUrl: mongoURI, collectionName: 'sessions' }),
     cookie: { maxAge: 60 * 60 * 1000 }
 }));
 
@@ -74,6 +71,14 @@ const protectAdminRoute = (req, res, next) => {
     } else {
         res.redirect('/admin');
     }
+};
+
+const trackLocation = (req, res, next) => {
+    if (req.user && req.user.teamId) {
+        User.updateOne({ teamId: req.user.teamId }, { lastKnownLocation: req.originalUrl })
+            .catch(err => console.error(`Failed to update location for ${req.user.teamId}: ${err.message}`));
+    }
+    next();
 };
 
 // ======================= API ROUTES =======================
@@ -220,13 +225,27 @@ app.post('/api/submit-final-challenge', protectPlayerRoute, async (req, res) => 
 app.get('/', checkAuthStatus, (req, res) => res.render('index', { title: 'Cyber Survivor', isLoggedIn: res.locals.isLoggedIn }));
 app.get('/login', (req, res) => res.render('login', { title: 'Login' }));
 app.get('/register', (req, res) => res.render('register', { title: 'Register' }));
-app.get('/dashboard', protectPlayerRoute, (req, res) => res.render('dashboard', { title: 'Dashboard', user: req.user }));
-app.get('/waiting', protectPlayerRoute, (req, res) => res.render('waiting', { title: 'Waiting for Team', user: req.user }));
-app.get('/post-mission-wait', protectPlayerRoute, (req, res) => res.render('post_mission_waiting', { title: 'Mission Complete - Awaiting Team', user: req.user }));
-app.get('/webex', protectPlayerRoute, (req, res) => res.render('webex', { title: 'Final Challenge', user: req.user }));
-app.get('/role/cyber', protectPlayerRoute, (req, res) => res.render('role_cyber', { title: 'CyberSecurity Expert', user: req.user }));
-app.get('/role/eng', protectPlayerRoute, (req, res) => res.render('role_engineer', { title: 'Engineer', user: req.user }));
-app.get('/role/opera', protectPlayerRoute, (req, res) => res.render('role_operations', { title: 'Operations Expert', user: req.user }));
+
+app.get('/dashboard', protectPlayerRoute, async (req, res) => {
+    try {
+        const team = await User.findOne({ teamId: req.user.teamId }).lean();
+        if (team && team.lastKnownLocation && team.lastKnownLocation !== '/dashboard') {
+            return res.redirect(team.lastKnownLocation);
+        }
+        await User.updateOne({ teamId: req.user.teamId }, { lastKnownLocation: '/dashboard' });
+        res.render('dashboard', { title: 'Dashboard', user: req.user });
+    } catch (error) {
+        console.error("Dashboard redirect error:", error);
+        res.render('dashboard', { title: 'Dashboard', user: req.user });
+    }
+});
+
+app.get('/waiting', protectPlayerRoute, trackLocation, (req, res) => res.render('waiting', { title: 'Waiting for Team', user: req.user }));
+app.get('/post-mission-wait', protectPlayerRoute, trackLocation, (req, res) => res.render('post_mission_waiting', { title: 'Mission Complete - Awaiting Team', user: req.user }));
+app.get('/webex', protectPlayerRoute, trackLocation, (req, res) => res.render('webex', { title: 'Final Challenge', user: req.user }));
+app.get('/role/cyber', protectPlayerRoute, trackLocation, (req, res) => res.render('role_cyber', { title: 'CyberSecurity Expert', user: req.user }));
+app.get('/role/eng', protectPlayerRoute, trackLocation, (req, res) => res.render('role_engineer', { title: 'Engineer', user: req.user }));
+app.get('/role/opera', protectPlayerRoute, trackLocation, (req, res) => res.render('role_operations', { title: 'Operations Expert', user: req.user }));
 
 // ======================= ADMIN ROUTES =======================
 app.get('/admin', (req, res) => res.render('admin_login', { title: 'Admin Login', error: null }));

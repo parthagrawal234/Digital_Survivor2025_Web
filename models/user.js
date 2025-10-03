@@ -21,7 +21,6 @@ const delegateSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
-    // NEW: Track hints used for point deduction
     hintsUsed: {
         type: Number,
         default: 0
@@ -43,12 +42,16 @@ const userSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
-    // NEW: Fields to track the timed portion of the game
     round2StartTime: {
         type: Date
     },
     round3EndTime: {
         type: Date
+    },
+    // NEW: Field to store the team's last visited page URL
+    lastKnownLocation: {
+        type: String,
+        default: '/dashboard'
     }
 });
 
