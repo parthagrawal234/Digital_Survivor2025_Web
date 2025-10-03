@@ -17,24 +17,32 @@
 </head>
 <body class="bg-gray-900 text-white antialiased">
     <div class="fixed inset-0 z-[-1] bg-gradient-to-br from-gray-900 via-[#0b1029] to-cyan-900"></div>
+
     <div class="min-h-screen flex items-center justify-center p-4">
+
         <div id="welcomePage" class="max-w-2xl w-full text-center fade-in">
             <img src="/images/cyberrolecard.jpg" alt="Cybersecurity Expert" class="w-48 h-48 mx-auto rounded-full border-4 border-cyan-500/50 shadow-lg shadow-cyan-500/20 mb-6">
             <h1 class="font-orbitron text-4xl font-bold text-cyan-400">Cybersecurity Expert</h1>
             <p class="mt-2 text-lg text-gray-300">Welcome, Delegate <span class="font-bold text-white"><%= user.delegateId %></span>.</p>
             <p class="mt-4 text-gray-400 max-w-lg mx-auto">Your mission briefing is ready. The integrity of our network is in your hands.</p>
-            <button onclick="enterStory()" class="mt-8 inline-block bg-cyan-500 hover:bg-cyan-600 text-gray-900 font-bold text-lg px-8 py-3 rounded-lg shadow-lg shadow-cyan-500/20 transform hover:scale-105 transition-all duration-300">Begin Mission</button>
+            <button onclick="enterStory()" class="mt-8 inline-block bg-cyan-500 hover:bg-cyan-600 text-gray-900 font-bold text-lg px-8 py-3 rounded-lg shadow-lg shadow-cyan-500/20 transform hover:scale-105 transition-all duration-300">
+                Begin Mission
+            </button>
         </div>
+
         <div id="storyPage" class="max-w-4xl w-full bg-gray-900/50 backdrop-blur-sm border border-cyan-500/30 rounded-2xl shadow-2xl shadow-cyan-500/10 p-8 md:p-12 hidden">
             <div class="flex flex-col md:flex-row items-center gap-8">
                 <img src="/images/cyberstory.jpg" class="w-48 h-48 rounded-lg border-2 border-cyan-500/30 flex-shrink-0" alt="Mission Briefing">
                 <div class="text-left">
                     <h2 class="font-orbitron text-2xl font-bold text-cyan-400 mb-4">Incoming Transmission...</h2>
                     <p id="storyText" class="text-gray-300 leading-relaxed min-h-[150px]"></p>
-                    <button onclick="enterSimulation()" class="mt-6 font-bold bg-cyan-500/20 hover:bg-cyan-500/40 text-cyan-300 py-2 px-6 rounded-lg transition-colors">Start Analysis</button>
+                    <button onclick="enterSimulation()" class="mt-6 font-bold bg-cyan-500/20 hover:bg-cyan-500/40 text-cyan-300 py-2 px-6 rounded-lg transition-colors">
+                        Start Analysis
+                    </button>
                 </div>
             </div>
         </div>
+
         <div id="quizPage" class="max-w-4xl w-full bg-gray-900/50 backdrop-blur-sm border border-cyan-500/30 rounded-2xl shadow-2xl shadow-cyan-500/10 p-8 md:p-12 hidden">
             <div class="flex justify-between items-center mb-6">
                 <h1 class="font-orbitron text-3xl font-bold text-cyan-400">Cybersecurity Analysis</h1>
@@ -42,28 +50,124 @@
             </div>
             <form id="quizForm" class="space-y-6">
                 <div>
-                    <label for="q1" class="block text-lg text-gray-300 leading-relaxed">A U.S. official announced a regional security partnership with Latin America... [Full Question]</label>
+                    <label for="q1" class="block text-lg text-gray-300 leading-relaxed">
+                        A U.S. official announced a regional security partnership with Latin America. The information once lived on the Department of State’s website, but today the page looks completely different. Rumor has it, back in 2009, a sidebar on that site contained a travel update about the Secretary’s visit abroad. Can you find which country was mentioned in that travel update?
+                    </label>
                     <p class="text-xs text-cyan-400/70 mt-2">Flag format: CSS{Country_Name}</p>
                     <input type="text" id="q1" name="q1" class="w-full mt-4 px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none" placeholder="Enter your answer...">
                     <div class="mt-2">
-                        <button type="button" onclick="getHint('q1', event)" class="text-xs font-semibold text-cyan-300 bg-cyan-500/10 hover:bg-cyan-500/20 px-3 py-1 rounded-md transition-colors">Get Hint</button>
+                        <button type="button" onclick="getHint('q1', event)" class="text-xs font-semibold text-cyan-300 bg-cyan-500/10 hover:bg-cyan-500/20 px-3 py-1 rounded-md transition-colors">Get Hint (-5 pts)</button>
                         <p id="hint-q1" class="text-xs text-gray-400 mt-1 italic"></p>
                     </div>
                 </div>
-                <button type="button" onclick="submitAnswers()" class="w-full font-bold text-lg text-slate-900 bg-cyan-500 hover:bg-cyan-600 py-3 rounded-lg transition-all duration-300">Submit Analysis</button>
+                <button type="button" onclick="submitAnswers()" class="w-full font-bold text-lg text-slate-900 bg-cyan-500 hover:bg-cyan-600 py-3 rounded-lg transition-all duration-300">
+                    Submit Analysis
+                </button>
             </form>
             <p id="result" class="text-center text-sm mt-4 min-h-[20px]"></p>
         </div>
     </div>
+
 <script>
-    let startTime, timerInterval;
-    const storyContent = `The first round was a physical breach... [Full Story]`;
-    function typeWriter(text, el, delay=20) { let i=0; el.innerHTML=""; function typing() { if(i<text.length) { el.innerHTML+=text.charAt(i); i++; setTimeout(typing,delay); } } typing(); }
-    function enterStory() { document.getElementById("welcomePage").style.display="none"; const page=document.getElementById("storyPage"); page.classList.remove("hidden"); page.classList.add("fade-in"); typeWriter(storyContent,document.getElementById("storyText")); }
-    function enterSimulation() { document.getElementById("storyPage").style.display="none"; const page=document.getElementById("quizPage"); page.classList.remove("hidden"); page.classList.add("fade-in"); startTime=Date.now(); startTimer(1200); }
-    function startTimer(duration) { let left=duration; const el=document.getElementById("timer"); timerInterval=setInterval(()=>{left--;const mins=Math.floor(left/60);let secs=left%60;secs=secs<10?"0"+secs:secs;el.textContent=`${mins}:${secs}`;if(left<=0){clearInterval(timerInterval);submitAnswers();}},1000); }
-    async function getHint(qId, ev) { const btn=ev.target; const el=document.getElementById(`hint-${qId}`); try { const res=await fetch('/api/get-hint',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({questionId:qId})}); const data=await res.json(); if(res.ok){el.textContent=`Hint: ${data.hint}`;btn.disabled=true;btn.textContent='Hint Used';btn.classList.add('opacity-50','cursor-not-allowed');}else{el.textContent=data.message||'Could not retrieve hint.';}}catch(e){el.textContent='Network error while fetching hint.';}}
-    async function submitAnswers() { clearInterval(timerInterval); const time=Math.floor((Date.now()-startTime)/1000); const answer=document.getElementById("q1").value.trim(); const el=document.getElementById("result"); const payload={role:"cyber",answers:{q1:answer},timeTakenSec:time}; try { const res=await fetch("/api/submit-progress",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)}); const data=await res.json(); if(res.ok){el.className='text-center text-sm mt-4 text-green-400';el.textContent=`Analysis complete. Score: ${data.score}/1. Awaiting team...`;setTimeout(()=>{window.location.href="/post-mission-wait";},2000);}else{el.className='text-center text-sm mt-4 text-red-400';el.textContent=data.message||'Submission failed.';}}catch(e){el.className='text-center text-sm mt-4 text-red-400';el.textContent='A network error occurred.'}}
+    let startTime;
+    let timerInterval;
+    const storyContent = `The first round was a physical breach, but the real war is digital. While your team secured the asset, a ghost program was released into our network—a sophisticated data worm we're calling "Cerberus." Standard firewalls are useless. Your mission is not to delete it—that would be too noisy. You must perform a digital lobotomy. Your task is to analyze network traffic, identify the command nodes of Cerberus, and sever their connection to the main hive. You are the scalpel in this operation.`;
+
+    function typeWriter(text, element, delay = 20) {
+        let i = 0;
+        element.innerHTML = "";
+        function typing() {
+            if (i < text.length) {
+                element.innerHTML += text.charAt(i);
+                i++;
+                setTimeout(typing, delay);
+            }
+        }
+        typing();
+    }
+
+    function enterStory() {
+        document.getElementById("welcomePage").style.display = "none";
+        const storyPage = document.getElementById("storyPage");
+        storyPage.classList.remove("hidden");
+        storyPage.classList.add("fade-in");
+        typeWriter(storyContent, document.getElementById("storyText"));
+    }
+
+    function enterSimulation() {
+        document.getElementById("storyPage").style.display = "none";
+        const quizPage = document.getElementById("quizPage");
+        quizPage.classList.remove("hidden");
+        quizPage.classList.add("fade-in");
+        startTime = Date.now();
+        startTimer(1200);
+    }
+
+    function startTimer(duration) {
+        let timeLeft = duration;
+        const timerElement = document.getElementById("timer");
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            const minutes = Math.floor(timeLeft / 60);
+            let seconds = timeLeft % 60;
+            seconds = seconds < 10 ? "0" + seconds : seconds;
+            timerElement.textContent = `${minutes}:${seconds}`;
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                submitAnswers();
+            }
+        }, 1000);
+    }
+
+    async function getHint(questionId, event) {
+        const hintButton = event.target;
+        const hintElement = document.getElementById(`hint-${questionId}`);
+        try {
+            const response = await fetch('/api/get-hint', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ questionId: questionId })
+            });
+            const data = await response.json();
+            if (response.ok) {
+                hintElement.textContent = `Hint: ${data.hint}`;
+                hintButton.disabled = true;
+                hintButton.textContent = 'Hint Used';
+                hintButton.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                hintElement.textContent = data.message || 'Could not retrieve hint.';
+            }
+        } catch (error) {
+            hintElement.textContent = 'Network error while fetching hint.';
+        }
+    }
+
+    async function submitAnswers() {
+        clearInterval(timerInterval);
+        const timeTakenSec = Math.floor((Date.now() - startTime) / 1000);
+        const userAnswer = document.getElementById("q1").value.trim();
+        const resultEl = document.getElementById("result");
+        const payload = { role: "cyber", answers: { q1: userAnswer }, timeTakenSec: timeTakenSec };
+        try {
+            const response = await fetch("/api/submit-progress", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+            const data = await response.json();
+            if (response.ok) {
+                resultEl.className = 'text-center text-sm mt-4 text-green-400';
+                resultEl.textContent = `Analysis complete. Final Score: ${data.score}. Awaiting team...`;
+                setTimeout(() => { window.location.href = "/post-mission-wait"; }, 2000);
+            } else {
+                resultEl.className = 'text-center text-sm mt-4 text-red-400';
+                resultEl.textContent = data.message || 'Submission failed.';
+            }
+        } catch (error) {
+            resultEl.className = 'text-center text-sm mt-4 text-red-400';
+            resultEl.textContent = 'A network error occurred.';
+        }
+    }
 </script>
 </body>
 </html>

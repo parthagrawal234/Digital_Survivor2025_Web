@@ -55,32 +55,32 @@
                 <div>
                     <label class="block text-md text-gray-300">Q1: The Crown Protocol Security System... Write the Boolean expression for when the gates should activate.</label>
                     <input type="text" name="q1" class="form-input" placeholder="Enter A, B, C, or D">
-                    <div class="mt-2"><button type="button" onclick="getHint('q1', event)" class="text-xs font-semibold text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 px-3 py-1 rounded-md">Get Hint</button><p id="hint-q1" class="text-xs text-gray-400 mt-1 italic"></p></div>
+                    <div class="mt-2"><button type="button" onclick="getHint('q1', event)" class="text-xs font-semibold text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 px-3 py-1 rounded-md">Get Hint (-5 pts)</button><p id="hint-q1" class="text-xs text-gray-400 mt-1 italic"></p></div>
                 </div>
                 <div>
                     <label class="block text-md text-gray-300">Q2: Phantoms encounter a data-lock circuit... Derive Boolean expression for Q.</label>
                     <input type="text" name="q2" class="form-input" placeholder="Enter A, B, C, or D">
-                    <div class="mt-2"><button type="button" onclick="getHint('q2', event)" class="text-xs font-semibold text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 px-3 py-1 rounded-md">Get Hint</button><p id="hint-q2" class="text-xs text-gray-400 mt-1 italic"></p></div>
+                    <div class="mt-2"><button type="button" onclick="getHint('q2', event)" class="text-xs font-semibold text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 px-3 py-1 rounded-md">Get Hint (-5 pts)</button><p id="hint-q2" class="text-xs text-gray-400 mt-1 italic"></p></div>
                 </div>
                 <div>
                     <label class="block text-md text-gray-300">Q3: Analyze the following C program that modifies an array...</label>
                     <input type="text" name="q3" class="form-input" placeholder="Enter A, B, C, or D">
-                    <div class="mt-2"><button type="button" onclick="getHint('q3', event)" class="text-xs font-semibold text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 px-3 py-1 rounded-md">Get Hint</button><p id="hint-q3" class="text-xs text-gray-400 mt-1 italic"></p></div>
+                    <div class="mt-2"><button type="button" onclick="getHint('q3', event)" class="text-xs font-semibold text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 px-3 py-1 rounded-md">Get Hint (-5 pts)</button><p id="hint-q3" class="text-xs text-gray-400 mt-1 italic"></p></div>
                 </div>
                 <div>
                     <label class="block text-md text-gray-300">Q4: Examine integer division in C.</label>
                     <input type="text" name="q4" class="form-input" placeholder="Enter A, B, C, or D">
-                    <div class="mt-2"><button type="button" onclick="getHint('q4', event)" class="text-xs font-semibold text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 px-3 py-1 rounded-md">Get Hint</button><p id="hint-q4" class="text-xs text-gray-400 mt-1 italic"></p></div>
+                    <div class="mt-2"><button type="button" onclick="getHint('q4', event)" class="text-xs font-semibold text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 px-3 py-1 rounded-md">Get Hint (-5 pts)</button><p id="hint-q4" class="text-xs text-gray-400 mt-1 italic"></p></div>
                 </div>
                 <div>
                     <label class="block text-md text-gray-300">Q5: Analyze this sum calculation in a loop.</label>
                     <input type="text" name="q5" class="form-input" placeholder="Enter A, B, C, or D">
-                    <div class="mt-2"><button type="button" onclick="getHint('q5', event)" class="text-xs font-semibold text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 px-3 py-1 rounded-md">Get Hint</button><p id="hint-q5" class="text-xs text-gray-400 mt-1 italic"></p></div>
+                    <div class="mt-2"><button type="button" onclick="getHint('q5', event)" class="text-xs font-semibold text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 px-3 py-1 rounded-md">Get Hint (-5 pts)</button><p id="hint-q5" class="text-xs text-gray-400 mt-1 italic"></p></div>
                 </div>
                 <div>
                     <label class="block text-md text-gray-300">Q6: Array out-of-bounds issue.</label>
                     <input type="text" name="q6" class="form-input" placeholder="Enter A, B, C, or D">
-                    <div class="mt-2"><button type="button" onclick="getHint('q6', event)" class="text-xs font-semibold text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 px-3 py-1 rounded-md">Get Hint</button><p id="hint-q6" class="text-xs text-gray-400 mt-1 italic"></p></div>
+                    <div class="mt-2"><button type="button" onclick="getHint('q6', event)" class="text-xs font-semibold text-purple-300 bg-purple-500/10 hover:bg-purple-500/20 px-3 py-1 rounded-md">Get Hint (-5 pts)</button><p id="hint-q6" class="text-xs text-gray-400 mt-1 italic"></p></div>
                 </div>
                 <button type="button" onclick="submitAnswers()" class="w-full mt-6 font-bold text-lg text-white bg-purple-600 hover:bg-purple-700 py-3 rounded-lg transition-all duration-300">
                     Submit Analysis
@@ -93,7 +93,6 @@
 <script>
     let startTime;
     let timerInterval;
-
     const storyContent = `Engineer's Mission: The simulation begins to break apart into raw structures: firewalls disguised as logic gates, traps hidden in lines of code. You must debug the illusion itself — writing and rewriting commands to bend Nexus Core’s architecture back against itself. Every successful solution rewires a piece of the false world.`;
 
     function typeWriter(text, element, delay = 20) {
@@ -141,7 +140,7 @@
             }
         }, 1000);
     }
-    
+
     async function getHint(questionId, event) {
         const hintButton = event.target;
         const hintElement = document.getElementById(`hint-${questionId}`);
@@ -170,20 +169,13 @@
         const timeTakenSec = Math.floor((Date.now() - startTime) / 1000);
         const form = document.getElementById("quizForm");
         const resultEl = document.getElementById("result");
-
         const answers = {};
         for (const element of form.elements) {
             if (element.name) {
                 answers[element.name] = element.value.trim();
             }
         }
-
-        const payload = {
-            role: "eng",
-            answers: answers,
-            timeTakenSec: timeTakenSec
-        };
-
+        const payload = { role: "eng", answers: answers, timeTakenSec: timeTakenSec };
         try {
             const response = await fetch("/api/submit-progress", {
                 method: "POST",
@@ -193,7 +185,7 @@
             const data = await response.json();
             if (response.ok) {
                 resultEl.className = 'text-center text-sm mt-4 text-green-400';
-                resultEl.textContent = `Analysis complete. Score: ${data.score}/6. Awaiting team...`;
+                resultEl.textContent = `Analysis complete. Final Score: ${data.score}. Awaiting team...`;
                 setTimeout(() => { window.location.href = "/post-mission-wait"; }, 2000);
             } else {
                 resultEl.className = 'text-center text-sm mt-4 text-red-400';

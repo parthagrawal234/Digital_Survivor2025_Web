@@ -28,10 +28,8 @@ app.use(cookieParser());
 app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Atlas connection string
 const mongoURI = process.env.MONGO_URI || "mongodb+srv://parthagr_db_user:agrawal.db%40123@digitalsurvivor2025.vveprg8.mongodb.net/cyber_survivor?retryWrites=true&w=majority&appName=Digitalsurvivor2025";
 
-// Configure session to use MongoStore
 app.use(session({
     secret: process.env.SESSION_SECRET || 'admin_session_secret_key',
     resave: false,
@@ -40,12 +38,9 @@ app.use(session({
         mongoUrl: mongoURI,
         collectionName: 'sessions'
     }),
-    cookie: { 
-        maxAge: 60 * 60 * 1000 // 1 hour
-    }
+    cookie: { maxAge: 60 * 60 * 1000 }
 }));
 
-// Connect to MongoDB
 mongoose.connect(mongoURI, {})
   .then(() => console.log("✅ Successfully connected to MongoDB Atlas!"))
   .catch(err => console.error("❌ MongoDB Atlas connection error:", err));
@@ -175,7 +170,18 @@ app.post('/api/submit-progress', protectPlayerRoute, async (req, res) => {
 app.post('/api/get-hint', protectPlayerRoute, async (req, res) => {
     const { questionId } = req.body;
     const { teamId, delegateId, role } = req.user;
-    const hints = { 'cyber': { q1: 'Hint...' }, 'eng': { q1: 'Hint...', q2: 'Hint...', q3: 'Hint...', q4: 'Hint...', q5: 'Hint...', q6: 'Hint...' }, 'opera': { q1: 'Hint...' } };
+    const hints = {
+        'cyber': { q1: 'Think about a major cybersecurity event in 2020 involving a software supply chain. The malicious domain was registered in a capital city known for its vibrant culture and history.' },
+        'eng': {
+            q1: 'Focus on the "OR" conditions. Phantom Operative and Manual Override can force activation on their own.',
+            q2: 'The first gate is a NOR gate. The second is a NAND gate. The final gate is an AND gate.',
+            q3: 'Trace the loop for each index. Even indices are doubled, odd indices are decremented.',
+            q4: 'In C, dividing two integers results in an integer. The decimal part is truncated before being assigned to the float.',
+            q5: 'The `sum` variable is never initialized to 0. It starts with a random garbage value.',
+            q6: 'Arrays in C are 0-indexed. An array of size 5 has indices 0, 1, 2, 3, and 4. Accessing index 5 is out of bounds.'
+        },
+        'opera': { q1: 'The racing event is the Formula E championship. Research the title sponsor for the 2024 season in that specific city. The fort is a famous landmark in the same city.' }
+    };
     const hintText = hints[role]?.[questionId];
     if (hintText) {
         try {
@@ -253,26 +259,35 @@ app.get('/admin/logout', (req, res) => {
 io.on('connection', (socket) => {
     let currentTeamId = null;
     let currentDelegateId = null;
+
     socket.on('join-team-room', ({ teamId, delegateId }) => {
         socket.join(teamId);
         currentTeamId = teamId;
         currentDelegateId = delegateId;
         socket.emit('team-status-update', teamReadyStates[teamId] || {});
     });
+
     socket.on('player-ready', async ({ teamId, delegateId }) => {
-        if (!teamReadyStates[teamId]) teamReadyStates[teamId] = {};
+        if (!teamReadyStates[teamId]) {
+            teamReadyStates[teamId] = {};
+        }
         teamReadyStates[teamId][delegateId] = true;
         io.to(teamId).emit('team-status-update', teamReadyStates[teamId]);
+
         if (Object.keys(teamReadyStates[teamId]).length === 3) {
             await User.findOneAndUpdate({ teamId }, { round2StartTime: new Date() });
             io.to(teamId).emit('start-mission');
             delete teamReadyStates[teamId];
+        } else {
+            socket.emit('go-to-waiting-room');
         }
     });
+
     socket.on('join-post-mission-room', ({ teamId, delegateId }) => {
         socket.join(teamId);
         socket.emit('mission-status-update', missionCompleteStates[teamId] || {});
     });
+
     socket.on('disconnect', () => {
         if (currentTeamId && currentDelegateId && teamReadyStates[currentTeamId]) {
             delete teamReadyStates[currentTeamId][currentDelegateId];
