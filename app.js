@@ -166,6 +166,7 @@ app.post('/api/logout', protectPlayerRoute, async (req, res) => {
     res.redirect('/');
 });
 
+
 app.post('/api/submit-progress', protectPlayerRoute, async (req, res) => {
     const { role, answers, timeTakenSec } = req.body;
     const { teamId, delegateId } = req.user;
@@ -199,7 +200,18 @@ app.post('/api/submit-progress', protectPlayerRoute, async (req, res) => {
 app.post('/api/get-hint', protectPlayerRoute, async (req, res) => {
     const { questionId } = req.body;
     const { teamId, delegateId, role } = req.user;
-    const hints = { /* ... all hint text ... */ };
+    const hints = {
+        'cyber': { q1: 'Think about a major cybersecurity event in 2020 involving a software supply chain. The malicious domain was registered in a capital city known for its vibrant culture and history.' },
+        'eng': {
+            q1: 'Focus on the "OR" conditions. Phantom Operative and Manual Override can force activation on their own.',
+            q2: 'The first gate is a NOR gate. The second is a NAND gate. The final gate is an AND gate.',
+            q3: 'Trace the loop for each index. Even indices are doubled, odd indices are decremented.',
+            q4: 'In C, dividing two integers results in an integer. The decimal part is truncated before being assigned to the float.',
+            q5: 'The `sum` variable is never initialized to 0. It starts with a random garbage value.',
+            q6: 'Arrays in C are 0-indexed. An array of size 5 has indices 0, 1, 2, 3, and 4. Accessing index 5 is out of bounds.'
+        },
+        'opera': { q1: 'The racing event is the Formula E championship. Research the title sponsor for the 2024 season in that specific city. The fort is a famous landmark in the same city.' }
+    };
     const hintText = hints[role]?.[questionId];
     if (hintText) {
         try {
@@ -254,21 +266,7 @@ app.get('/dashboard', protectPlayerRoute, async (req, res) => {
         res.render('dashboard', { title: 'Dashboard', user: req.user });
     }
 });
-app.get('/waiting', protectPlayerRoute, trackLocation, async (req, res) => {
-    try {
-        const team = await User.findOne({ teamId: req.user.teamId });
-        res.render('waiting', { 
-            title: 'Waiting for Team', 
-            user: { 
-                ...req.user,
-                team: team // Add the team information to the user object
-            } 
-        });
-    } catch (error) {
-        console.error('Error fetching team data:', error);
-        res.render('waiting', { title: 'Waiting for Team', user: req.user });
-    }
-});
+app.get('/waiting', protectPlayerRoute, trackLocation, (req, res) => res.render('waiting', { title: 'Waiting for Team', user: req.user }));
 app.get('/post-mission-wait', protectPlayerRoute, trackLocation, (req, res) => res.render('post_mission_waiting', { title: 'Mission Complete - Awaiting Team', user: req.user }));
 app.get('/webex', protectPlayerRoute, trackLocation, (req, res) => res.render('webex', { title: 'Final Challenge', user: req.user }));
 app.get('/role/cyber', protectPlayerRoute, authorizeRole('cyber'), trackLocation, (req, res) => res.render('role_cyber', { title: 'CyberSecurity Expert', user: req.user }));
@@ -310,36 +308,20 @@ io.on('connection', (socket) => {
         socket.join(teamId);
         currentTeamId = teamId;
         currentDelegateId = delegateId;
-        // Emit current state to the newly joined player
         socket.emit('team-status-update', teamReadyStates[teamId] || {});
-        // Also emit to all team members to ensure everyone is in sync
-        io.to(teamId).emit('team-status-update', teamReadyStates[teamId] || {});
     });
     socket.on('player-ready', async ({ teamId, delegateId }) => {
-        console.log(`Player Ready - Team: ${teamId}, Delegate: ${delegateId}`);
-        
         if (!teamReadyStates[teamId]) {
             teamReadyStates[teamId] = {};
         }
         teamReadyStates[teamId][delegateId] = true;
-        
-        // Emit to all team members including sender
         io.to(teamId).emit('team-status-update', teamReadyStates[teamId]);
-        
-        // Check if all three players are ready
-        const team = await User.findOne({ teamId });
-        if (team) {
-            console.log(`Team ${teamId} has ${team.delegates.length} delegates`);
-            console.log(`Ready players: ${Object.keys(teamReadyStates[teamId]).length}`);
-            
-            if (team.delegates.length === Object.keys(teamReadyStates[teamId]).length) {
-                console.log(`All players ready for team ${teamId}, starting mission`);
-                io.to(teamId).emit('start-mission');
-                delete teamReadyStates[teamId];
-            }
+        if (Object.keys(teamReadyStates[teamId]).length === 3) {
+            await User.findOneAndUpdate({ teamId }, { round2StartTime: new Date() });
+            io.to(teamId).emit('start-mission');
+            delete teamReadyStates[teamId];
         } else {
-            console.error(`Team ${teamId} not found in database`);
-            socket.emit('error', { message: 'Team not found' });
+            socket.emit('go-to-waiting-room');
         }
     });
     socket.on('join-post-mission-room', async ({ teamId, delegateId }) => {

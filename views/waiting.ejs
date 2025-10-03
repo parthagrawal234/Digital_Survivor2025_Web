@@ -38,59 +38,35 @@
     const userRole = '<%= user.role %>';
     const socket = io();
 
-    // Join the team room immediately
-    socket.emit('join-team-room', { teamId, delegateId });
+    // 1. Join the team room as soon as the page loads
+    socket.on('connect', () => {
+        socket.emit('join-team-room', { teamId, delegateId });
+    });
 
-    // Listen for status updates from the server
-    socket.on('team-status-update', (readyStates) => {
-        console.log('Received team status:', readyStates); // Debug log
-        
+    // 2. Listen for status updates from the server
+    socket.on('team-status-update', (readyDelegates) => {
         const delegateList = document.getElementById('delegate-list');
         const readyCountEl = document.getElementById('ready-count');
-        delegateList.innerHTML = ''; // Clear the list
         
-        // Get the ready players
-        const readyPlayers = Object.keys(readyStates || {});
-        readyCountEl.textContent = readyPlayers.length;
+        delegateList.innerHTML = ''; // Clear the list
+        const readyIds = Object.keys(readyDelegates);
+        readyCountEl.textContent = readyIds.length;
 
-        // Get all team delegates from the database
-        const team = JSON.parse('<%= JSON.stringify(user.team) %>');
-        team.delegates.forEach(delegate => {
+        readyIds.forEach(id => {
             const li = document.createElement('li');
-            const isReady = readyStates && readyStates[delegate.delegateId];
-            
-            li.className = `flex items-center ${isReady ? 'text-green-400' : 'text-gray-400'}`;
-            if (isReady) {
-                li.innerHTML = `
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg> 
-                    ${delegate.delegateId} (${delegate.role}) - Ready
-                `;
-            } else {
-                li.innerHTML = `
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    ${delegate.delegateId} (${delegate.role}) - Waiting...
-                `;
-            }
+            li.className = 'flex items-center text-green-400';
+            li.innerHTML = `<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> ${id} - Ready`;
             delegateList.appendChild(li);
         });
     });
 
+    // 3. Listen for the final command to start the mission
     socket.on('start-mission', () => {
-        console.log('Received start-mission event'); // Debug log
         let roleUrl = '/';
         if (userRole === 'cyber') roleUrl = '/role/cyber';
         if (userRole === 'eng') roleUrl = '/role/eng';
         if (userRole === 'opera') roleUrl = '/role/opera';
         window.location.href = roleUrl;
-    });
-
-    // Handle any errors
-    socket.on('error', (error) => {
-        console.error('Socket error:', error);
     });
 </script>
 </body>
