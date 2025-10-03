@@ -254,7 +254,21 @@ app.get('/dashboard', protectPlayerRoute, async (req, res) => {
         res.render('dashboard', { title: 'Dashboard', user: req.user });
     }
 });
-app.get('/waiting', protectPlayerRoute, trackLocation, (req, res) => res.render('waiting', { title: 'Waiting for Team', user: req.user }));
+app.get('/waiting', protectPlayerRoute, trackLocation, async (req, res) => {
+    try {
+        const team = await User.findOne({ teamId: req.user.teamId });
+        res.render('waiting', { 
+            title: 'Waiting for Team', 
+            user: { 
+                ...req.user,
+                team: team // Add the team information to the user object
+            } 
+        });
+    } catch (error) {
+        console.error('Error fetching team data:', error);
+        res.render('waiting', { title: 'Waiting for Team', user: req.user });
+    }
+});
 app.get('/post-mission-wait', protectPlayerRoute, trackLocation, (req, res) => res.render('post_mission_waiting', { title: 'Mission Complete - Awaiting Team', user: req.user }));
 app.get('/webex', protectPlayerRoute, trackLocation, (req, res) => res.render('webex', { title: 'Final Challenge', user: req.user }));
 app.get('/role/cyber', protectPlayerRoute, authorizeRole('cyber'), trackLocation, (req, res) => res.render('role_cyber', { title: 'CyberSecurity Expert', user: req.user }));
@@ -296,7 +310,10 @@ io.on('connection', (socket) => {
         socket.join(teamId);
         currentTeamId = teamId;
         currentDelegateId = delegateId;
+        // Emit current state to the newly joined player
         socket.emit('team-status-update', teamReadyStates[teamId] || {});
+        // Also emit to all team members to ensure everyone is in sync
+        io.to(teamId).emit('team-status-update', teamReadyStates[teamId] || {});
     });
     socket.on('player-ready', async ({ teamId, delegateId }) => {
         console.log(`Player Ready - Team: ${teamId}, Delegate: ${delegateId}`);
@@ -306,8 +323,8 @@ io.on('connection', (socket) => {
         }
         teamReadyStates[teamId][delegateId] = true;
         
-        // Log current ready states
-        console.log(`Team ${teamId} ready states:`, teamReadyStates[teamId]);
+        // Emit to all team members including sender
+        io.to(teamId).emit('team-status-update', teamReadyStates[teamId]);
         
         // Check if all three players are ready
         const team = await User.findOne({ teamId });
@@ -319,9 +336,6 @@ io.on('connection', (socket) => {
                 console.log(`All players ready for team ${teamId}, starting mission`);
                 io.to(teamId).emit('start-mission');
                 delete teamReadyStates[teamId];
-            } else {
-                console.log(`Waiting for more players - Team ${teamId}`);
-                socket.emit('go-to-waiting-room');
             }
         } else {
             console.error(`Team ${teamId} not found in database`);
