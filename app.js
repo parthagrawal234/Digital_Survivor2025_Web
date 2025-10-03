@@ -166,6 +166,7 @@ app.post('/api/logout', protectPlayerRoute, async (req, res) => {
     res.redirect('/');
 });
 
+
 app.post('/api/submit-progress', protectPlayerRoute, async (req, res) => {
     const { role, answers, timeTakenSec } = req.body;
     const { teamId, delegateId } = req.user;
@@ -199,7 +200,18 @@ app.post('/api/submit-progress', protectPlayerRoute, async (req, res) => {
 app.post('/api/get-hint', protectPlayerRoute, async (req, res) => {
     const { questionId } = req.body;
     const { teamId, delegateId, role } = req.user;
-    const hints = { /* ... all hint text ... */ };
+    const hints = {
+        'cyber': { q1: 'Think about a major cybersecurity event in 2020 involving a software supply chain. The malicious domain was registered in a capital city known for its vibrant culture and history.' },
+        'eng': {
+            q1: 'Focus on the "OR" conditions. Phantom Operative and Manual Override can force activation on their own.',
+            q2: 'The first gate is a NOR gate. The second is a NAND gate. The final gate is an AND gate.',
+            q3: 'Trace the loop for each index. Even indices are doubled, odd indices are decremented.',
+            q4: 'In C, dividing two integers results in an integer. The decimal part is truncated before being assigned to the float.',
+            q5: 'The `sum` variable is never initialized to 0. It starts with a random garbage value.',
+            q6: 'Arrays in C are 0-indexed. An array of size 5 has indices 0, 1, 2, 3, and 4. Accessing index 5 is out of bounds.'
+        },
+        'opera': { q1: 'The racing event is the Formula E championship. Research the title sponsor for the 2024 season in that specific city. The fort is a famous landmark in the same city.' }
+    };
     const hintText = hints[role]?.[questionId];
     if (hintText) {
         try {
@@ -299,7 +311,9 @@ io.on('connection', (socket) => {
         socket.emit('team-status-update', teamReadyStates[teamId] || {});
     });
     socket.on('player-ready', async ({ teamId, delegateId }) => {
-        if (!teamReadyStates[teamId]) teamReadyStates[teamId] = {};
+        if (!teamReadyStates[teamId]) {
+            teamReadyStates[teamId] = {};
+        }
         teamReadyStates[teamId][delegateId] = true;
         io.to(teamId).emit('team-status-update', teamReadyStates[teamId]);
         if (Object.keys(teamReadyStates[teamId]).length === 3) {

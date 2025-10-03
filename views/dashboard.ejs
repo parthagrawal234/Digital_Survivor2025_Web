@@ -41,28 +41,30 @@
     </main>
 
 <script>
-    const teamId = '<%= user.teamId %>';
-    const delegateId = '<%= user.delegateId %>';
-    const userRole = '<%= user.role %>';
-    const socket = io();
+    document.addEventListener('DOMContentLoaded', () => {
+        const teamId = '<%= user.teamId %>';
+        const delegateId = '<%= user.delegateId %>';
+        const userRole = '<%= user.role %>';
+        const socket = io();
 
-    socket.on('start-mission', () => {
-        let roleUrl = '/';
-        if (userRole === 'cyber') roleUrl = '/role/cyber';
-        if (userRole === 'eng') roleUrl = '/role/eng';
-        if (userRole === 'opera') roleUrl = '/role/opera';
-        window.location.href = roleUrl;
-    });
+        socket.on('start-mission', () => {
+            let roleUrl = '/';
+            if (userRole === 'cyber') roleUrl = '/role/cyber';
+            if (userRole === 'eng') roleUrl = '/role/eng';
+            if (userRole === 'opera') roleUrl = '/role/opera';
+            window.location.href = roleUrl;
+        });
 
-    socket.on('go-to-waiting-room', () => {
-        window.location.href = '/waiting';
-    });
+        socket.on('go-to-waiting-room', () => {
+            window.location.href = '/waiting';
+        });
 
-    document.getElementById('startBtn').addEventListener('click', () => {
-        socket.emit('player-ready', { teamId, delegateId });
-        const startBtn = document.getElementById('startBtn');
-        startBtn.disabled = true;
-        startBtn.textContent = 'Waiting for Server...';
+        document.getElementById('startBtn').addEventListener('click', () => {
+            socket.emit('player-ready', { teamId, delegateId });
+            const startBtn = document.getElementById('startBtn');
+            startBtn.disabled = true;
+            startBtn.textContent = 'Waiting for Server...';
+        });
     });
 </script>
 </body>
