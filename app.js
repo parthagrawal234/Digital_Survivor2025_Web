@@ -167,74 +167,34 @@ app.post('/api/logout', protectPlayerRoute, async (req, res) => {
     res.redirect('/');
 });
 
-app.get('/api/get-progress', protectPlayerRoute, async (req, res) => {
-    try {
-        const { teamId } = req.user;
-        const team = await User.findOne({ teamId });
-        if (team) {
-            res.json({
-                solvedQuestions: team.solvedQuestions // Fetches from team level
-            });
-        } else {
-            res.status(404).json({ message: 'Team not found.' });
-        }
-    } catch (error) {
-        res.status(500).json({ message: 'Server error fetching progress.' });
-    }
-});
 
-app.post('/api/check-answer', protectPlayerRoute, async (req, res) => {
-    const { questionId, answer } = req.body;
-    const { teamId, delegateId, role } = req.user;
-
-    const correctAnswers = { 'cyber': { q1: 'css{mexico}' }, 'eng': { q1: 'a', q2: 'c', q3: 'a', q4: 'b', q5: 'b', q6: 'd' }, 'opera': { q1: 'css{22717,greenko,7,golconda}' } };
-    const pointsPerQuestion = 10;
-
-    const correctAnswer = (correctAnswers[role]?.[questionId] || '').replace(/\s+/g, '').toLowerCase();
-    const userAnswer = (answer || '').replace(/\s+/g, '').toLowerCase();
-
-    if (correctAnswer && userAnswer === correctAnswer) {
-        try {
-            const team = await User.findOne({ teamId });
-            const delegate = team.delegates.find(d => d.delegateId === delegateId);
-
-            if (!team.solvedQuestions.includes(questionId)) {
-                team.solvedQuestions.push(questionId);
-                delegate.points += pointsPerQuestion;
-                await team.save();
-                res.json({ correct: true, message: 'Correct!' });
-            } else {
-                res.json({ correct: true, message: 'Already Solved.' });
-            }
-        } catch (error) {
-            res.status(500).json({ message: 'Error saving answer.' });
-        }
-    } else {
-        res.json({ correct: false, message: 'Incorrect. Try again.' });
-    }
-});
-
-app.post('/api/end-mission', protectPlayerRoute, async (req, res) => {
-    const { timeTakenSec } = req.body;
+app.post('/api/submit-progress', protectPlayerRoute, async (req, res) => {
+    const { role, answers, timeTakenSec } = req.body;
     const { teamId, delegateId } = req.user;
+    const correctAnswers = { 'cyber': { q1: 'css{mexico}' }, 'eng': { q1: 'a', q2: 'c', q3: 'a', q4: 'b', q5: 'b', q6: 'd' }, 'opera': { q1: 'css{22717,greenko,7,golconda}' } };
+    let score = 0;
+    const correctSet = correctAnswers[role];
+    if (correctSet) {
+        score = Object.keys(correctSet).reduce((count, key) => {
+            const userAnswer = (answers[key] || '').replace(/\s+/g, '').toLowerCase();
+            const correctAnswer = (correctSet[key] || '').replace(/\s+/g, '').toLowerCase();
+            return count + (userAnswer === correctAnswer ? 1 : 0);
+        }, 0);
+    }
     try {
         const team = await User.findOne({ teamId });
         const delegate = team.delegates.find(d => d.delegateId === delegateId);
         if (delegate) {
+            delegate.points = score - (delegate.hintsUsed * 5);
             delegate.timeSpent = timeTakenSec;
-            delegate.points = delegate.points - (delegate.hintsUsed * 5);
             await team.save();
-
-            if (!missionCompleteStates[teamId]) missionCompleteStates[teamId] = {};
-            missionCompleteStates[teamId][delegateId] = true;
-            io.to(teamId).emit('mission-status-update', missionCompleteStates[teamId]);
-
-            res.status(200).json({ message: 'Mission time recorded.' });
-        } else {
-            res.status(404).json({ message: 'Delegate not found.' });
         }
+        if (!missionCompleteStates[teamId]) missionCompleteStates[teamId] = {};
+        missionCompleteStates[teamId][delegateId] = true;
+        io.to(teamId).emit('mission-status-update', missionCompleteStates[teamId]);
+        res.status(200).json({ message: 'Progress saved!', score: delegate.points });
     } catch (error) {
-        res.status(500).json({ message: 'Error ending mission.' });
+        res.status(500).json({ message: 'Error saving progress.' });
     }
 });
 
@@ -263,16 +223,17 @@ app.post('/api/get-hint', protectPlayerRoute, async (req, res) => {
 app.post('/api/submit-final-challenge', protectPlayerRoute, async (req, res) => {
     const { finalAnswer } = req.body;
     const { teamId } = req.user;
-    const FINAL_CHALLENGE_ANSWER = "METAVERSE";
+    const FINAL_CHALLENGE_ANSWER = "YOUR_ANSWER_HERE";
+
     if (finalAnswer && finalAnswer.trim().toUpperCase() === FINAL_CHALLENGE_ANSWER) {
         try {
             await User.findOneAndUpdate({ teamId }, { round3EndTime: new Date() });
-            res.status(200).json({ success: true, message: 'Challenge complete! Well done.' });
+            res.status(200).json({ success: true, message: 'Correct! Final time recorded. Well done.' });
         } catch (error) {
             res.status(500).json({ success: false, message: 'Error saving final time.' });
         }
     } else {
-        res.status(400).json({ success: false, message: 'Incorrect. Try again.' });
+        res.status(400).json({ success: false, message: 'Incorrect answer. Try again.' });
     }
 });
 
@@ -376,4 +337,3 @@ io.on('connection', (socket) => {
 server.listen(PORT, () => {
     console.log(`🚀 Server is running at http://localhost:${PORT}`);
 });
-
