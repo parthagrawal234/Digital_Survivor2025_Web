@@ -263,10 +263,26 @@ app.post('/api/submit-final-challenge', protectPlayerRoute, async (req, res) => 
     const { finalAnswer } = req.body;
     const { teamId } = req.user;
     const FINAL_CHALLENGE_ANSWER = "YOUR_ANSWER_HERE";
+    const FINAL_CHALLENGE_ID = "final-q1";
+    const FINAL_CHALLENGE_POINTS = 50;
     if (finalAnswer && finalAnswer.trim().toUpperCase() === FINAL_CHALLENGE_ANSWER) {
         try {
-            await User.findOneAndUpdate({ teamId }, { round3EndTime: new Date() });
-            io.to(teamId).emit('final-challenge-complete', { success: true, redirectUrl: '/round3-wait' });
+            const team = await User.findOne({ teamId });
+            
+            if (team.solvedQuestions.includes(FINAL_CHALLENGE_ID)) {
+                return res.status(200).json({ success: true, message: 'Challenge already completed by your team.' });
+            }
+
+            const delegate = team.delegates.find(d => d.delegateId === delegateId);
+            if (delegate) {
+                delegate.points += FINAL_CHALLENGE_POINTS;
+            }
+
+            team.solvedQuestions.push(FINAL_CHALLENGE_ID);
+            team.round3EndTime = new Date();
+            await team.save();
+            
+            io.to(teamId).emit('final-challenge-complete', { redirectUrl: '/round3-wait' });
             res.status(200).json({ success: true, message: 'Correct! Final time recorded. Well done.' });
         } catch (error) {
             res.status(500).json({ success: false, message: 'Error saving final time.' });

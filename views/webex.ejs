@@ -126,7 +126,7 @@
         document.getElementById('challenge-page').classList.add('active');
     }
     
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
         // Start visual effects immediately
         typeWriter(STORYLINE, document.getElementById('story-text'));
 
@@ -159,6 +159,16 @@
         // Form submission logic
         const form = document.getElementById('finalChallengeForm');
         const messageEl = document.getElementById('message');
+        const progressRes = await fetch('/api/get-progress');
+        const progress = await progressRes.json();
+        // It then checks if the 'solvedQuestions' array includes the ID for this final challenge ('final-q1').
+        if (progress.solvedQuestions && progress.solvedQuestions.includes('final-q1')) {
+            // If it has already been solved, a success message is shown and the form is disabled.
+            messageEl.style.color = 'lightgreen';
+            messageEl.textContent = 'Challenge already completed by your team.';
+            answerInput.disabled = true;
+            submitButton.disabled = true;
+        }
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
