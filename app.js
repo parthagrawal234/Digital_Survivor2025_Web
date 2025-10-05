@@ -266,7 +266,7 @@ app.post('/api/submit-final-challenge', protectPlayerRoute, async (req, res) => 
     if (finalAnswer && finalAnswer.trim().toUpperCase() === FINAL_CHALLENGE_ANSWER) {
         try {
             await User.findOneAndUpdate({ teamId }, { round3EndTime: new Date() });
-            io.to(teamId).emit('final-challenge-complete', { redirectUrl: '/round3-wait' });
+            io.to(teamId).emit('final-challenge-complete', { success: true, redirectUrl: '/round3-wait' });
             res.status(200).json({ success: true, message: 'Correct! Final time recorded. Well done.' });
         } catch (error) {
             res.status(500).json({ success: false, message: 'Error saving final time.' });
@@ -353,6 +353,12 @@ io.on('connection', (socket) => {
             io.to(teamId).emit('start-mission');
             delete teamReadyStates[teamId];
         }
+    });
+
+    socket.on('join-room', async ({ teamId, delegateId }) => {
+        socket.join(teamId);
+        currentTeamId = teamId;
+        currentDelegateId = delegateId;
     });
 
     socket.on('player-ready', ({ teamId, delegateId }) => {
