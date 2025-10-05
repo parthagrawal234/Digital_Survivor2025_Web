@@ -17,7 +17,7 @@ const PORT = process.env.PORT || 3000;
 const ADMIN_USER = process.env.ADMIN_USER || 'admin';
 const ADMIN_PASS = process.env.ADMIN_PASS || 'password123';
 const JWT_SECRET = process.env.JWT_SECRET || 'a_very_secret_key';
-const ROUND_1_SECRET_CODE = process.env.ROUND_1_SECRET_CODE
+const ROUND_1_SECRET_CODE = 'R1_COMPLETE_2025';
 
 let isRound3Live = false;
 const teamReadyStates = {};
@@ -48,16 +48,6 @@ const User = require('./models/user');
 const Visit = require('./models/visit');
 
 // ======================= AUTH MIDDLEWARE =======================
-const checkAuthStatus = (req, res, next) => {
-    try {
-        const token = req.cookies.token;
-        res.locals.isLoggedIn = !!(token && jwt.verify(token, JWT_SECRET));
-    } catch (error) {
-        res.locals.isLoggedIn = false;
-    }
-    next();
-};
-
 const protectPlayerRoute = (req, res, next) => {
     try {
         req.user = jwt.verify(req.cookies.token, JWT_SECRET);
@@ -65,34 +55,6 @@ const protectPlayerRoute = (req, res, next) => {
     } catch (error) {
         res.redirect('/login');
     }
-};
-
-const protectAdminRoute = (req, res, next) => {
-    if (req.session.isAdmin) {
-        next();
-    } else {
-        res.redirect('/admin');
-    }
-};
-
-const redirectIfLoggedIn = (req, res, next) => {
-    const token = req.cookies.token;
-    if (token) {
-        try {
-            jwt.verify(token, JWT_SECRET);
-            return res.redirect('/dashboard');
-        } catch (error) { next(); }
-    } else { next(); }
-};
-
-const authorizeRole = (requiredRole) => {
-    return (req, res, next) => {
-        if (req.user && req.user.role === requiredRole) {
-            next();
-        } else {
-            res.status(403).redirect('/dashboard');
-        }
-    };
 };
 
 const trackLocation = (req, res, next) => {
@@ -105,18 +67,51 @@ const trackLocation = (req, res, next) => {
     next();
 };
 
+const authorizeRole = (requiredRole) => {
+    return (req, res, next) => {
+        if (req.user && req.user.role === requiredRole) {
+            next();
+        } else {
+            res.status(403).redirect('/dashboard');
+        }
+    };
+};
+
+const redirectIfLoggedIn = (req, res, next) => {
+    const token = req.cookies.token;
+    if (token) {
+        try {
+            jwt.verify(token, JWT_SECRET);
+            return res.redirect('/dashboard');
+        } catch (error) { next(); }
+    } else { next(); }
+};
+
+const checkAuthStatus = (req, res, next) => {
+    try {
+        const token = req.cookies.token;
+        res.locals.isLoggedIn = !!(token && jwt.verify(token, JWT_SECRET));
+    } catch (error) {
+        res.locals.isLoggedIn = false;
+    }
+    next();
+};
+
+const protectAdminRoute = (req, res, next) => {
+    if (req.session.isAdmin) {
+        next();
+    } else {
+        res.redirect('/admin');
+    }
+};
+
+
 // ======================= API ROUTES =======================
 app.post('/api/register', async (req, res) => {
     try {
         const { teamId, delegateId, role, password, round1Code } = req.body;
-
-        // Check the Round 1 Code first
-        if (round1Code !== ROUND_1_SECRET_CODE) {
-            return res.status(401).json({ message: 'Invalid Round 1 Code. Access Denied.' });
-        }
-
+        if (round1Code !== ROUND_1_SECRET_CODE) return res.status(401).json({ message: 'Invalid Round 1 Code. Access Denied.' });
         if (!teamId || !delegateId || !role || !password) return res.status(400).json({ message: 'All fields are required.' });
-        
         let team = await User.findOne({ teamId });
         if (team) {
             const isMatch = await bcrypt.compare(password, team.password);
@@ -180,9 +175,7 @@ app.get('/api/get-progress', protectPlayerRoute, async (req, res) => {
         const { teamId } = req.user;
         const team = await User.findOne({ teamId });
         if (team) {
-            res.json({
-                solvedQuestions: team.solvedQuestions
-            });
+            res.json({ solvedQuestions: team.solvedQuestions });
         } else {
             res.status(404).json({ message: 'Team not found.' });
         }
@@ -193,21 +186,21 @@ app.get('/api/get-progress', protectPlayerRoute, async (req, res) => {
 
 app.post('/api/check-answer', protectPlayerRoute, async (req, res) => {
     const { questionId, answer } = req.body;
-    const { teamId, delegateId, role } = req.user;
+    const { teamId, delegateId } = req.user;
+
     const correctAnswers = {
         'cyber-q1': 'css{mexico}',
         'eng-q1': 'a', 'eng-q2': 'c', 'eng-q3': 'a', 'eng-q4': 'b', 'eng-q5': 'b', 'eng-q6': 'd',
         'opera-q1': 'css{22717,greenko,7,golconda}'
     };
     const pointsPerQuestion = 10;
-    const correctAnswer = (correctAnswers[role]?.[questionId] || '').replace(/\s+/g, '').toLowerCase();
+    const correctAnswer = (correctAnswers[questionId] || '').replace(/\s+/g, '').toLowerCase();
     const userAnswer = (answer || '').replace(/\s+/g, '').toLowerCase();
 
     if (correctAnswer && userAnswer === correctAnswer) {
         try {
             const team = await User.findOne({ teamId });
             const delegate = team.delegates.find(d => d.delegateId === delegateId);
-
             if (!team.solvedQuestions.includes(questionId)) {
                 team.solvedQuestions.push(questionId);
                 delegate.points += pointsPerQuestion;
@@ -248,12 +241,18 @@ app.post('/api/end-mission', protectPlayerRoute, async (req, res) => {
 
 app.post('/api/get-hint', protectPlayerRoute, async (req, res) => {
     const { questionId } = req.body;
-    const { teamId, delegateId, role } = req.user;
+    const { teamId, delegateId } = req.user;
     const hints = {
-        "cyber_q1" : 'Think about a major cybersecurity event in 2020 involving a software supply chain. The malicious domain was registered in a capital city known for its vibrant culture and history.',
-        'opera_q1' : 'The racing event is the Formula E championship. Research the title sponsor for the 2024 season in that specific city. The fort is a famous landmark in the same city.' 
+        'cyber-q1': 'Think about a major cybersecurity event in 2020 involving a software supply chain. The malicious domain was registered in a capital city known for its vibrant culture and history.',
+        'eng-q1': 'Focus on the "OR" conditions. Phantom Operative and Manual Override can force activation on their own.',
+        'eng-q2': 'The first gate is a NOR gate. The second is a NAND gate. The final gate is an AND gate.',
+        'eng-q3': 'Trace the loop for each index. Even indices are doubled, odd indices are decremented.',
+        'eng-q4': 'In C, dividing two integers results in an integer. The decimal part is truncated before being assigned to the float.',
+        'eng-q5': 'The `sum` variable is never initialized to 0. It starts with a random garbage value.',
+        'eng-q6': 'Arrays in C are 0-indexed. An array of size 5 has indices 0, 1, 2, 3, and 4. Accessing index 5 is out of bounds.',
+        'opera-q1': 'The racing event is the Formula E championship. Research the title sponsor for the 2024 season in that specific city. The fort is a famous landmark in the same city.'
     };
-    const hintText = hints[role]?.[questionId];
+    const hintText = hints[questionId];
     if (hintText) {
         try {
             const team = await User.findOne({ teamId });
@@ -275,13 +274,10 @@ app.post('/api/submit-final-challenge', protectPlayerRoute, async (req, res) => 
     const { finalAnswer } = req.body;
     const { teamId } = req.user;
     const FINAL_CHALLENGE_ANSWER = "YOUR_ANSWER_HERE";
-
     if (finalAnswer && finalAnswer.trim().toUpperCase() === FINAL_CHALLENGE_ANSWER) {
         try {
             await User.findOneAndUpdate({ teamId }, { round3EndTime: new Date() });
-            // Instead of just responding, broadcast to the team
             io.to(teamId).emit('final-challenge-complete', { redirectUrl: '/round3-wait' });
-            // Still send a response to the original requester
             res.status(200).json({ success: true, message: 'Correct! Final time recorded. Well done.' });
         } catch (error) {
             res.status(500).json({ success: false, message: 'Error saving final time.' });
@@ -290,10 +286,10 @@ app.post('/api/submit-final-challenge', protectPlayerRoute, async (req, res) => 
         res.status(400).json({ success: false, message: 'Incorrect answer. Try again.' });
     }
 });
+
 app.post('/api/admin/start-round3-global', protectAdminRoute, (req, res) => {
     isRound3Live = true;
-    io.emit('start-round-3'); // Broadcast to all connected clients
-    console.log('[Game] Admin has started Round 3 for ALL teams.');
+    io.emit('start-round-3');
     res.status(200).json({ message: 'Round 3 has been started for all players.' });
 });
 
@@ -339,7 +335,7 @@ app.post('/admin/login', async (req, res) => {
 app.get('/admin/dashboard', protectAdminRoute, async (req, res) => {
     try {
         const teams = await User.find({});
-        res.render('admin', { title: 'Admin Dashboard', teams: teams });
+        res.render('admin', { title: 'Admin Dashboard', teams: teams, isRound3Live });
     } catch (error) {
         res.status(500).send('Error fetching team data.');
     }
@@ -356,29 +352,22 @@ app.get('/admin/logout', (req, res) => {
 io.on('connection', (socket) => {
     let currentTeamId = null;
     let currentDelegateId = null;
-    socket.on('join-team-room', async ({ teamId, delegateId }) => {
+    socket.on('join-room', ({ teamId, delegateId }) => {
         socket.join(teamId);
         currentTeamId = teamId;
         currentDelegateId = delegateId;
-        
-        io.to(teamId).emit('team-status-update', teamReadyStates[teamId] || {});
-
-        if (teamReadyStates[teamId] && Object.keys(teamReadyStates[teamId]).length === 3) {
-            console.log(`[Game] Team '${teamId}' is fully ready. Starting mission!`);
+    });
+    socket.on('player-ready', async ({ teamId, delegateId }) => {
+        if (!teamReadyStates[teamId]) teamReadyStates[teamId] = {};
+        teamReadyStates[teamId][delegateId] = true;
+        io.to(teamId).emit('team-status-update', teamReadyStates[teamId]);
+        if (Object.keys(teamReadyStates[teamId]).length === 3) {
             await User.findOneAndUpdate({ teamId }, { round2StartTime: new Date() });
             io.to(teamId).emit('start-mission');
             delete teamReadyStates[teamId];
+        } else {
+            socket.emit('go-to-waiting-room');
         }
-    });
-    socket.on('player-ready', ({ teamId, delegateId }) => {
-        if (!teamReadyStates[teamId]) {
-            teamReadyStates[teamId] = {};
-        }
-        teamReadyStates[teamId][delegateId] = true;
-        
-        io.to(teamId).emit('team-status-update', teamReadyStates[teamId]);
-        
-        socket.emit('go-to-waiting-room');
     });
     socket.on('join-post-mission-room', async ({ teamId, delegateId }) => {
         socket.join(teamId);
@@ -392,15 +381,15 @@ io.on('connection', (socket) => {
             io.to(teamId).emit('team-finished-round2');
         }
     });
+    socket.on('check-round3-status', () => {
+        if (isRound3Live) {
+            socket.emit('start-round-3');
+        }
+    });
     socket.on('disconnect', () => {
         if (currentTeamId && currentDelegateId && teamReadyStates[currentTeamId]) {
             delete teamReadyStates[currentTeamId][currentDelegateId];
             io.to(currentTeamId).emit('team-status-update', teamReadyStates[currentTeamId]);
-        }
-    });
-    socket.on('check-round3-status', () => {
-        if (isRound3Live) {
-            socket.emit('start-round-3');
         }
     });
 });

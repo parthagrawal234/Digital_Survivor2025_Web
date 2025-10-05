@@ -99,15 +99,15 @@
     });
 
     function typeWriter(text, element, delay = 20) {
-        let i = 0;
-        element.innerHTML = "";
-        function typing() {
-            if (i < text.length) {
-                element.innerHTML += text.charAt(i);
-                i++;
-                setTimeout(typing, delay);
-            }
-        }
+        let i = 0; 
+        element.innerHTML = ""; 
+        function typing() { 
+            if (i < text.length) { 
+                element.innerHTML += text.charAt(i); 
+                i++; 
+                setTimeout(typing, delay); 
+            } 
+        } 
         typing();
     }
 
@@ -165,8 +165,8 @@
             const data = await response.json();
             if (response.ok) {
                 hintElement.textContent = `Hint: ${data.hint}`;
-                hintButton.disabled = true;
-                hintButton.textContent = 'Hint Used';
+                hintButton.disabled = true; 
+                hintButton.textContent = 'Hint Used'; 
                 hintButton.classList.add('opacity-50', 'cursor-not-allowed');
             } else {
                 hintElement.textContent = data.message || 'Could not retrieve hint.';
@@ -188,9 +188,7 @@
         const result = await response.json();
         if (result.correct) {
             lockQuestion(questionId, 'Correct!');
-            if (!teamSolvedQuestions.includes(questionId)) {
-                teamSolvedQuestions.push(questionId);
-            }
+            if (!teamSolvedQuestions.includes(questionId)) teamSolvedQuestions.push(questionId);
             checkIfAllSolved();
         } else {
             feedbackEl.textContent = 'Incorrect. Try again.';

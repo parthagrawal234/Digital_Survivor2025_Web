@@ -76,12 +76,30 @@
     const storyContent = `Engineer's Mission: The simulation begins to break apart into raw structures: firewalls disguised as logic gates, traps hidden in lines of code. You must debug the illusion itself — writing and rewriting commands to bend Nexus Core’s architecture back against itself. Every successful solution rewires a piece of the false world.`;
 
     const questions = [
-        { id: 'eng-q1', text: `Q1: The Crown Protocol Security System (2149)...` },
-        { id: 'eng-q2', text: `Q2: Phantoms encounter a data-lock circuit...<br><br> <img src="/images/engques.jpg" alt="logic gate" class="my-2 rounded max-w-xs mx-auto"><br>...` },
-        { id: 'eng-q3', text: `Q3: Analyze the following C program...` },
-        { id: 'eng-q4', text: `Q4: What is the output of the program? ...` },
-        { id: 'eng-q5', text: `Q5: What will be the output? ...` },
-        { id: 'eng-q6', text: `Q6: What is the code for this output? ...` }
+        { 
+            id: 'eng-q1', 
+            text: `Q1: The Crown Protocol Security System (2149) – In the year 2149, Nexus Core governs humanity through Surveillance Gates that monitor night-cycle intrusions.<br> Night-cycle (N=1) and Recon Drone detects intruders (V=1). <br> Phantom Operative nearby (P=1) and Manual Override by Nexus (M=1) can force activation. <br> Write the Boolean expression for when the gates should activate. (5 Points)<br><br> Options:<br> A) Y = (N . V) + P + M<br> B) Y = (N + V) . P + M<br> C) Y = (N . V) + P . M<br> D) Y = (N + V) + P . M`
+        },
+        { 
+            id: 'eng-q2', 
+            text: `Q2: Phantoms encounter a data-lock circuit guarding AI King's firewall. <br> Four inputs: A & B from rebel keys, C & D from Nexus nodes. Output Q decides firewall opening.<br> Derive Boolean expression for Q. (5 Points)<br><br> <img src="/images/engques.jpg" alt="logic gate" class="my-2 rounded max-w-xs mx-auto"><br> Options:<br> A) Q=(A+B)'.(CD)'<br> B) Q=(A+B)+(CD)<br> C) Q=(A+B).(CD)'<br> D) Q=(A.B)'.(C+D)`
+        },
+        { 
+            id: 'eng-q3', 
+            text: `Q3: Analyze the following C program that modifies an array. Output the final array after the loop. (4 Points)<br><pre><code>int main() {<br>    int arr[7] = {1,2,3,4,5,6,7};<br>    for(int i=0;i<7;i++){<br>        if(i%2==0) <br>        arr[i] = arr[i]*2;<br>        else <br>        arr[i] = arr[i]-1;<br>    }<br>    for(int i=0;i<7;i++) <br>    printf("%d ",arr[i]);<br>    return 0;<br>}</code></pre>Options:<br> A) 2 1 6 3 10 5 14<br> B) 1 1 2 3 4 5 6<br> C) 2 2 6 4 10 6 14<br> D) 1 2 3 4 5 6 7`
+        },
+        { 
+            id: 'eng-q4', 
+            text: `Q4: What is the output of the program? (3 Points)<br><pre><code>int main() { <br>    int i, j, sum = 0; <br>    for (i = 1; i <= 4; i++) { <br>        for (j = 1; j <= 4; j++) { <br>            if ((i + j) % 2 == 0) continue; <br>            if (i * j > 10) break; <br>            sum += i * j - (i + j); <br>        } <br>    } <br>    printf("%d\\n", sum);<br>    return 0; <br>}</code></pre>Options: <br> A) -10 <br> B) -2 <br> C) 0 <br> D) 10`
+        },
+        { 
+            id: 'eng-q5', 
+            text: `Q5: What will be the output? (4 Points)<br><pre><code>int main() { <br>    char str[10] = "CSE"; <br>    printf("%d %d\\n", (int)sizeof(str), (int)strlen(str)); <br>    strcpy(str + 2, str);<br>    printf("%s\\n", str); <br>    printf("%c %c %c\\n", str[0], str[2], str[5]); <br>    return 0; <br>}</code></pre>Options: <br> A) <br>10 3 <br> CSEDE <br> C S D<br><br> B) <br>10 3 <br> CSE <br> C S E<br><br> C) <br>10 3 <br> CSEDE <br> C S E<br><br> D) <br>10 5 <br> CSEDE <br> C S D`
+        },
+        { 
+            id: 'eng-q6', 
+            text: `Q6: What is the code for this output? (4 Points)<br><br> * <br> *** <br> ***** <br> ******* <br><pre><code>A) <br>for(int i=1;i<=4;i++){ <br>    for(int j=1;j<=4-i;j++) <br>        printf(" "); <br>    for(int j=1;j<=2*i-1;j++) <br>    printf("*"); <br>    printf("\\n"); <br>} <br><br>B) <br>for(int i=1;i<=4;i++){ <br>    for(int j=1;j<=i;j++) <br>    printf(" "); <br>    for(int j=1;j<=2*i-1;j++) <br>        printf("*"); <br>    printf("\\n"); <br>} <br><br>C) <br>int i,j; <br>for(i=1;i<=4;i++){ <br>    for(j=1;j<=4-i;j++) <br>       printf(" "); <br>    for(j=1;j<=2*i-1;j++) <br>       printf("*"); <br>    printf("\\n"); <br><br>} <br><br>D) Both A and C</code></pre>`
+        }
     ];
 
     function buildQuestions() {
@@ -117,21 +135,35 @@
     });
 
     function typeWriter(text, element, delay = 20) {
-        let i = 0; element.innerHTML = ""; function typing() { if (i < text.length) { element.innerHTML += text.charAt(i); i++; setTimeout(typing, delay); } } typing();
+        let i = 0;
+        element.innerHTML = "";
+        function typing() {
+            if (i < text.length) {
+                element.innerHTML += text.charAt(i);
+                i++;
+                setTimeout(typing, delay);
+            }
+        }
+        typing();
     }
+
     function enterStory() {
         document.getElementById("welcomePage").style.display = "none";
         const storyPage = document.getElementById("storyPage");
-        storyPage.classList.remove("hidden"); storyPage.classList.add("fade-in");
+        storyPage.classList.remove("hidden");
+        storyPage.classList.add("fade-in");
         typeWriter(storyContent, document.getElementById("storyText"));
     }
+
     function enterSimulation() {
         document.getElementById("storyPage").style.display = "none";
         const quizPage = document.getElementById("quizPage");
-        quizPage.classList.remove("hidden"); quizPage.classList.add("fade-in");
+        quizPage.classList.remove("hidden");
+        quizPage.classList.add("fade-in");
         startTime = Date.now();
         startTimer(1200);
     }
+
     function startTimer(duration) {
         let timeLeft = duration;
         const timerElement = document.getElementById("timer");
@@ -147,6 +179,7 @@
             }
         }, 1000);
     }
+
     function lockQuestion(questionId, feedbackText) {
         document.getElementById(`${questionId}-input`).disabled = true;
         document.getElementById(`${questionId}-submit`).disabled = true;
@@ -167,7 +200,9 @@
         const result = await response.json();
         if (result.correct) {
             lockQuestion(questionId, 'Correct!');
-            if (!teamSolvedQuestions.includes(questionId)) teamSolvedQuestions.push(questionId);
+            if (!teamSolvedQuestions.includes(questionId)) {
+                teamSolvedQuestions.push(questionId);
+            }
             checkIfAllSolved();
         } else {
             feedbackEl.textContent = 'Incorrect. Try again.';
@@ -175,6 +210,7 @@
             setTimeout(() => feedbackEl.textContent = '', 2000);
         }
     }
+
     function checkIfAllSolved() {
         const roleQuestions = questions.map(q => q.id);
         const solvedRoleQuestions = teamSolvedQuestions.filter(qId => roleQuestions.includes(qId));
@@ -182,6 +218,7 @@
             endMission();
         }
     }
+
     async function endMission() {
         clearInterval(timerInterval);
         const timeTakenSec = Math.floor((Date.now() - startTime) / 1000);
