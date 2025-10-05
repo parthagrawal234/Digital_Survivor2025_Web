@@ -25,51 +25,51 @@
                 <p class="text-xs text-gray-400">Delegate: <span class="font-medium text-gray-300"><%= user.delegateId %></span></p>
             </div>
             <form action="/api/logout" method="POST">
-                <button type="submit" class="bg-red-600/80 hover:bg-red-700/80 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300 text-sm backdrop-blur-sm">Logout</button>
+                <button type="submit" class="bg-red-600/80 hover:bg-red-700/80 text-white font-bold py-2 px-4 rounded-lg">Logout</button>
             </form>
         </div>
     </header>
 
     <main class="min-h-screen flex items-center justify-center p-4">
         <div id="welcomePage" class="max-w-2xl w-full text-center fade-in">
-            <img src="/images/operationrole.jpg" alt="Operations Expert" class="w-48 h-48 mx-auto rounded-full border-4 border-pink-500/50 shadow-lg shadow-pink-500/20 mb-6">
+            <img src="/images/operationrole.jpg" alt="Operations Expert" class="w-48 h-48 mx-auto rounded-full border-4 border-pink-500/50 shadow-lg mb-6">
             <h1 class="font-orbitron text-4xl font-bold text-pink-400">Operations Expert</h1>
             <p class="mt-2 text-lg text-gray-300">Welcome, Delegate <span class="font-bold text-white"><%= user.delegateId %></span>.</p>
-            <p class="mt-4 text-gray-400 max-w-lg mx-auto">Signals are hidden in the noise. Your analytical skills are needed to uncover the enemy's plan.</p>
-            <button onclick="enterStory()" class="mt-8 inline-block bg-pink-600 hover:bg-pink-700 text-white font-bold text-lg px-8 py-3 rounded-lg shadow-lg shadow-pink-600/20 transform hover:scale-105 transition-all duration-300">Begin Mission</button>
+            <p class="mt-4 text-gray-400 max-w-lg mx-auto">Signals are hidden in the noise. Your analytical skills are needed.</p>
+            <button onclick="enterStory()" class="mt-8 inline-block bg-pink-600 hover:bg-pink-700 text-white font-bold text-lg px-8 py-3 rounded-lg shadow-lg">Begin Mission</button>
         </div>
 
-        <div id="storyPage" class="max-w-4xl w-full bg-gray-900/50 backdrop-blur-sm border border-pink-500/30 rounded-2xl shadow-2xl shadow-pink-500/10 p-8 md:p-12 hidden">
+        <div id="storyPage" class="max-w-4xl w-full bg-gray-900/50 backdrop-blur-sm border border-pink-500/30 rounded-2xl shadow-2xl p-8 md:p-12 hidden">
             <div class="flex flex-col md:flex-row items-center gap-8">
                 <img src="/images/operstory.jpg" class="w-48 h-48 rounded-lg border-2 border-pink-500/30 flex-shrink-0" alt="Mission Briefing">
                 <div class="text-left">
                     <h2 class="font-orbitron text-2xl font-bold text-pink-400 mb-4">Mission Briefing...</h2>
                     <p id="storyText" class="text-gray-300 leading-relaxed min-h-[150px]"></p>
-                    <button onclick="enterSimulation()" class="mt-6 font-bold bg-pink-500/20 hover:bg-pink-500/40 text-pink-300 py-2 px-6 rounded-lg transition-colors">Start Analysis</button>
+                    <button onclick="enterSimulation()" class="mt-6 font-bold bg-pink-500/20 hover:bg-pink-500/40 text-pink-300 py-2 px-6 rounded-lg">Start Analysis</button>
                 </div>
             </div>
         </div>
 
-        <div id="quizPage" class="max-w-4xl w-full bg-gray-900/50 backdrop-blur-sm border border-pink-500/30 rounded-2xl shadow-2xl shadow-pink-500/10 p-8 md:p-12 hidden">
+        <div id="quizPage" class="max-w-4xl w-full bg-gray-900/50 backdrop-blur-sm border border-pink-500/30 rounded-2xl shadow-2xl p-8 md:p-12 hidden">
             <div class="flex justify-between items-center mb-6">
                 <h1 class="font-orbitron text-3xl font-bold text-pink-400">Operations Analysis</h1>
                 <div id="timer" class="font-orbitron text-xl font-bold bg-pink-500/10 text-pink-300 px-4 py-2 rounded-lg border border-pink-500/30">20:00</div>
             </div>
             <div class="space-y-6" id="questions-container">
-                 <div id="q1-container" class="p-4 border border-gray-700 rounded-lg">
-                    <label for="q1-input" class="block text-md text-gray-300 leading-relaxed">
-                        A person attends a racing event from Rajkot... Can you help him recreate the experience?
-                        <img src="/images/car.jpg" alt="Racing Car" class="mt-4 rounded-lg border border-pink-500/30 mx-auto w-full max-w-sm">
+                 <div id="opera-q1-container" class="p-4 border border-gray-700 rounded-lg">
+                    <label for="opera-q1-input" class="block text-md text-gray-300 leading-relaxed">
+                        A person attends a racing event from Rajkot, he goes to another city through train on Monday, he boards the train at 5:30. The racing event is title sponsored by one of the World’s leading Energy Transition and Decarbonization solutions company. He enters through a gate which is closest to a major government building. He enjoys the race and the next day he goes to a fort which is a UNESCO world heritage sight. He has forgotten the entire experience. Can you help him recreate the experience?
+                        <img src="/images/operaques.jpg" alt="Racing Car" class="mt-4 rounded-lg border border-pink-500/30 mx-auto w-full max-w-sm">
                     </label>
                     <p class="text-xs text-pink-400/70 mt-2">Flag format: css{train_no,title_sponsorer,gate_number,fort_name}</p>
                     <div class="flex items-center gap-4 mt-2">
-                        <input type="text" id="q1-input" class="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-pink-500 outline-none" placeholder="Enter your flag...">
-                        <button type="button" id="q1-submit" onclick="submitAnswer('q1')" class="submit-btn text-sm font-semibold bg-pink-600 hover:bg-pink-700 text-white px-4 py-3 rounded-md">Submit</button>
+                        <input type="text" id="opera-q1-input" class="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg form-input" placeholder="Enter your flag...">
+                        <button type="button" id="opera-q1-submit" onclick="submitAnswer('opera-q1')" class="submit-btn text-sm font-semibold bg-pink-600 hover:bg-pink-700 text-white px-4 py-3 rounded-md">Submit</button>
                     </div>
-                    <p id="q1-feedback" class="text-xs mt-1 min-h-[16px]"></p>
+                    <p id="opera-q1-feedback" class="text-xs mt-1 min-h-[16px]"></p>
                     <div class="mt-2">
-                        <button type="button" id="q1-hint-btn" onclick="getHint('q1')" class="text-xs font-semibold text-pink-300 bg-pink-500/10 hover:bg-pink-500/20 px-3 py-1 rounded-md">Get Hint (-5 pts)</button>
-                        <p id="q1-hint" class="text-xs text-gray-400 mt-1 italic"></p>
+                        <button type="button" id="opera-q1-hint-btn" onclick="getHint('opera-q1')" class="text-xs font-semibold text-pink-300 bg-pink-500/10 hover:bg-pink-500/20 px-3 py-1 rounded-md">Get Hint (-5 pts)</button>
+                        <p id="opera-q1-hint" class="text-xs text-gray-400 mt-1 italic"></p>
                     </div>
                 </div>
             </div>
@@ -83,30 +83,22 @@
     let teamSolvedQuestions = [];
     const totalQuestions = 1;
     const storyContent = `Operation Specialist's Mission: Amid the chaos, Nexus Core hides signals in plain sight. Flickering lights, repeating glitches, subtle anomalies — the AI dares you to miss them. Your task is to see the cracks and decode meaning from the noise. The team depends on your vigilance to keep them aligned inside the storm.`;
-
+    
     document.addEventListener('DOMContentLoaded', async () => {
         const progressRes = await fetch('/api/get-progress');
         const progress = await progressRes.json();
         if (progress.solvedQuestions) {
             teamSolvedQuestions = progress.solvedQuestions;
-            teamSolvedQuestions.forEach(qId => lockQuestion(qId, 'Already Solved'));
+            if (teamSolvedQuestions.includes('opera-q1')) {
+                lockQuestion('opera-q1', 'Already Solved');
+            }
             checkIfAllSolved();
         }
     });
-
+    
     function typeWriter(text, element, delay = 20) {
-        let i = 0; 
-        element.innerHTML = ""; 
-        function typing() { 
-            if (i < text.length) { 
-                element.innerHTML += text.charAt(i); 
-                i++; 
-                setTimeout(typing, delay); 
-            } 
-        } 
-        typing();
+        let i = 0; element.innerHTML = ""; function typing() { if (i < text.length) { element.innerHTML += text.charAt(i); i++; setTimeout(typing, delay); } } typing();
     }
-
     function enterStory() {
         document.getElementById("welcomePage").style.display = "none";
         const storyPage = document.getElementById("storyPage");
@@ -114,7 +106,6 @@
         storyPage.classList.add("fade-in");
         typeWriter(storyContent, document.getElementById("storyText"));
     }
-
     function enterSimulation() {
         document.getElementById("storyPage").style.display = "none";
         const quizPage = document.getElementById("quizPage");
@@ -123,7 +114,6 @@
         startTime = Date.now();
         startTimer(1200);
     }
-
     function startTimer(duration) {
         let timeLeft = duration;
         const timerElement = document.getElementById("timer");
@@ -139,7 +129,6 @@
             }
         }, 1000);
     }
-
     function lockQuestion(questionId, feedbackText) {
         document.getElementById(`${questionId}-input`).disabled = true;
         document.getElementById(`${questionId}-submit`).disabled = true;
@@ -148,7 +137,6 @@
         feedbackEl.textContent = feedbackText;
         feedbackEl.className = 'text-xs mt-1 text-green-400';
     }
-
     async function getHint(questionId) {
         const hintButton = document.getElementById(`${questionId}-hint-btn`);
         const hintElement = document.getElementById(`${questionId}-hint`);
@@ -161,9 +149,7 @@
             const data = await response.json();
             if (response.ok) {
                 hintElement.textContent = `Hint: ${data.hint}`;
-                hintButton.disabled = true; 
-                hintButton.textContent = 'Hint Used'; 
-                hintButton.classList.add('opacity-50', 'cursor-not-allowed');
+                hintButton.disabled = true; hintButton.textContent = 'Hint Used'; hintButton.classList.add('opacity-50', 'cursor-not-allowed');
             } else {
                 hintElement.textContent = data.message || 'Could not retrieve hint.';
             }
@@ -171,7 +157,6 @@
             hintElement.textContent = 'Network error while fetching hint.';
         }
     }
-
     async function submitAnswer(questionId) {
         const input = document.getElementById(`${questionId}-input`);
         const feedbackEl = document.getElementById(`${questionId}-feedback`);
@@ -192,13 +177,11 @@
             setTimeout(() => feedbackEl.textContent = '', 2000);
         }
     }
-
     function checkIfAllSolved() {
-        if (teamSolvedQuestions.length >= totalQuestions) {
+        if (teamSolvedQuestions.includes('opera-q1')) {
             endMission();
         }
     }
-
     async function endMission() {
         clearInterval(timerInterval);
         const timeTakenSec = Math.floor((Date.now() - startTime) / 1000);

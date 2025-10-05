@@ -31,39 +31,38 @@
                 <p class="text-xs text-gray-400">Delegate: <span class="font-medium text-gray-300"><%= user.delegateId %></span></p>
             </div>
             <form action="/api/logout" method="POST">
-                <button type="submit" class="bg-red-600/80 hover:bg-red-700/80 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300 text-sm backdrop-blur-sm">Logout</button>
+                <button type="submit" class="bg-red-600/80 hover:bg-red-700/80 text-white font-bold py-2 px-4 rounded-lg">Logout</button>
             </form>
         </div>
     </header>
 
     <main class="min-h-screen flex items-center justify-center p-4">
-
         <div id="welcomePage" class="max-w-2xl w-full text-center fade-in">
-            <img src="/images/eng-rolecard.jpg" alt="Engineer" class="w-48 h-48 mx-auto rounded-full border-4 border-purple-500/50 shadow-lg shadow-purple-500/20 mb-6">
+            <img src="/images/eng-rolecard.jpg" alt="Engineer" class="w-48 h-48 mx-auto rounded-full border-4 border-purple-500/50 shadow-lg mb-6">
             <h1 class="font-orbitron text-4xl font-bold text-purple-400">Engineer</h1>
             <p class="mt-2 text-lg text-gray-300">Welcome, Delegate <span class="font-bold text-white"><%= user.delegateId %></span>.</p>
             <p class="mt-4 text-gray-400 max-w-lg mx-auto">The hardware is unstable. Your expertise is required to prevent a critical failure.</p>
-            <button onclick="enterStory()" class="mt-8 inline-block bg-purple-600 hover:bg-purple-700 text-white font-bold text-lg px-8 py-3 rounded-lg shadow-lg shadow-purple-600/20 transform hover:scale-105 transition-all duration-300">Begin Mission</button>
+            <button onclick="enterStory()" class="mt-8 inline-block bg-purple-600 hover:bg-purple-700 text-white font-bold text-lg px-8 py-3 rounded-lg shadow-lg">Begin Mission</button>
         </div>
 
-        <div id="storyPage" class="max-w-4xl w-full bg-gray-900/50 backdrop-blur-sm border border-purple-500/30 rounded-2xl shadow-2xl shadow-purple-500/10 p-8 md:p-12 hidden">
+        <div id="storyPage" class="max-w-4xl w-full bg-gray-900/50 backdrop-blur-sm border border-purple-500/30 rounded-2xl shadow-2xl p-8 md:p-12 hidden">
             <div class="flex flex-col md:flex-row items-center gap-8">
                 <img src="/images/engstory.jpg" class="w-48 h-48 rounded-lg border-2 border-purple-500/30 flex-shrink-0" alt="Mission Briefing">
                 <div class="text-left">
                     <h2 class="font-orbitron text-2xl font-bold text-purple-400 mb-4">Mission Briefing...</h2>
                     <p id="storyText" class="text-gray-300 leading-relaxed min-h-[150px]"></p>
-                    <button onclick="enterSimulation()" class="mt-6 font-bold bg-purple-500/20 hover:bg-purple-500/40 text-purple-300 py-2 px-6 rounded-lg transition-colors">Start Analysis</button>
+                    <button onclick="enterSimulation()" class="mt-6 font-bold bg-purple-500/20 hover:bg-purple-500/40 text-purple-300 py-2 px-6 rounded-lg">Start Analysis</button>
                 </div>
             </div>
         </div>
 
-        <div id="quizPage" class="max-w-5xl w-full bg-gray-900/50 backdrop-blur-sm border border-purple-500/30 rounded-2xl shadow-2xl shadow-purple-500/10 p-8 md:p-12 hidden">
+        <div id="quizPage" class="max-w-5xl w-full bg-gray-900/50 backdrop-blur-sm border border-purple-500/30 rounded-2xl shadow-2xl p-8 md:p-12 hidden">
              <div class="flex justify-between items-center mb-6">
                 <h1 class="font-orbitron text-3xl font-bold text-purple-400">Engineering Analysis</h1>
                 <div id="timer" class="font-orbitron text-xl font-bold bg-purple-500/10 text-purple-300 px-4 py-2 rounded-lg border border-purple-500/30">20:00</div>
             </div>
             <div class="space-y-8 overflow-y-auto max-h-[60vh] pr-4" id="questions-container">
-                <!-- Questions will be dynamically built by the script -->
+                <!-- Dynamically generated questions -->
             </div>
             <p id="result" class="text-center text-sm mt-4 min-h-[20px]"></p>
         </div>
@@ -77,30 +76,12 @@
     const storyContent = `Engineer's Mission: The simulation begins to break apart into raw structures: firewalls disguised as logic gates, traps hidden in lines of code. You must debug the illusion itself — writing and rewriting commands to bend Nexus Core’s architecture back against itself. Every successful solution rewires a piece of the false world.`;
 
     const questions = [
-        { 
-            id: 'q1', 
-            text: `Q1: The Crown Protocol Security System (2149) – In the year 2149, Nexus Core governs humanity through Surveillance Gates that monitor night-cycle intrusions.<br> Night-cycle (N=1) and Recon Drone detects intruders (V=1). <br> Phantom Operative nearby (P=1) and Manual Override by Nexus (M=1) can force activation. <br> Write the Boolean expression for when the gates should activate. (5 Points)<br><br> Options:<br> A) Y = (N . V) + P + M<br> B) Y = (N + V) . P + M<br> C) Y = (N . V) + P . M<br> D) Y = (N + V) + P . M`
-        },
-        { 
-            id: 'q2', 
-            text: `Q2: Phantoms encounter a data-lock circuit guarding AI King's firewall. <br> Four inputs: A & B from rebel keys, C & D from Nexus nodes. Output Q decides firewall opening.<br> Derive Boolean expression for Q. (5 Points)<br><br> <img src="/images/gate.jpg" alt="logic gate" class="my-2 rounded max-w-xs mx-auto"><br> Options:<br> A) Q=(A+B)'.(CD)'<br> B) Q=(A+B)+(CD)<br> C) Q=(A+B).(CD)'<br> D) Q=(A.B)'.(C+D)`
-        },
-        { 
-            id: 'q3', 
-            text: `Q3: Analyze the following C program that modifies an array. Output the final array after the loop. (4 Points)<br><pre><code>int main() {<br>    int arr[7] = {1,2,3,4,5,6,7};<br>    for(int i=0;i<7;i++){<br>        if(i%2==0) <br>        arr[i] = arr[i]*2;<br>        else <br>        arr[i] = arr[i]-1;<br>    }<br>    for(int i=0;i<7;i++) <br>    printf("%d ",arr[i]);<br>    return 0;<br>}</code></pre>Options:<br> A) 2 1 6 3 10 5 14<br> B) 1 1 2 3 4 5 6<br> C) 2 2 6 4 10 6 14<br> D) 1 2 3 4 5 6 7`
-        },
-        { 
-            id: 'q4', 
-            text: `Q4: What is the output of the program? (3 Points)<br><pre><code>int main() { <br>    int i, j, sum = 0; <br>    for (i = 1; i <= 4; i++) { <br>        for (j = 1; j <= 4; j++) { <br>            if ((i + j) % 2 == 0) continue; <br>            if (i * j > 10) break; <br>            sum += i * j - (i + j); <br>        } <br>    } <br>    printf("%d\\n", sum);<br>    return 0; <br>}</code></pre>Options: <br> A) -10 <br> B) -2 <br> C) 0 <br> D) 10`
-        },
-        { 
-            id: 'q5', 
-            text: `Q5: What will be the output? (4 Points)<br><pre><code>int main() { <br>    char str[10] = "CSE"; <br>    printf("%d %d\\n", (int)sizeof(str), (int)strlen(str)); <br>    strcpy(str + 2, str);<br>    printf("%s\\n", str); <br>    printf("%c %c %c\\n", str[0], str[2], str[5]); <br>    return 0; <br>}</code></pre>Options: <br> A) <br>10 3 <br> CSEDE <br> C S D<br><br> B) <br>10 3 <br> CSE <br> C S E<br><br> C) <br>10 3 <br> CSEDE <br> C S E<br><br> D) <br>10 5 <br> CSEDE <br> C S D`
-        },
-        { 
-            id: 'q6', 
-            text: `Q6: What is the code for this output? (4 Points)<br><br> * <br> *** <br> ***** <br> ******* <br><br> A) for(int i=1;i<=4;i++){...}<br> B) for(int i=1;i<=4;i++){...}<br> C) int i,j; for(i=1;i<=4;i++){...}<br> D) Both A and C`
-        }
+        { id: 'eng-q1', text: `Q1: The Crown Protocol Security System (2149)...` },
+        { id: 'eng-q2', text: `Q2: Phantoms encounter a data-lock circuit...<br><br> <img src="/images/engques.jpg" alt="logic gate" class="my-2 rounded max-w-xs mx-auto"><br>...` },
+        { id: 'eng-q3', text: `Q3: Analyze the following C program...` },
+        { id: 'eng-q4', text: `Q4: What is the output of the program? ...` },
+        { id: 'eng-q5', text: `Q5: What will be the output? ...` },
+        { id: 'eng-q6', text: `Q6: What is the code for this output? ...` }
     ];
 
     function buildQuestions() {
@@ -136,35 +117,21 @@
     });
 
     function typeWriter(text, element, delay = 20) {
-        let i = 0;
-        element.innerHTML = "";
-        function typing() {
-            if (i < text.length) {
-                element.innerHTML += text.charAt(i);
-                i++;
-                setTimeout(typing, delay);
-            }
-        }
-        typing();
+        let i = 0; element.innerHTML = ""; function typing() { if (i < text.length) { element.innerHTML += text.charAt(i); i++; setTimeout(typing, delay); } } typing();
     }
-
     function enterStory() {
         document.getElementById("welcomePage").style.display = "none";
         const storyPage = document.getElementById("storyPage");
-        storyPage.classList.remove("hidden");
-        storyPage.classList.add("fade-in");
+        storyPage.classList.remove("hidden"); storyPage.classList.add("fade-in");
         typeWriter(storyContent, document.getElementById("storyText"));
     }
-
     function enterSimulation() {
         document.getElementById("storyPage").style.display = "none";
         const quizPage = document.getElementById("quizPage");
-        quizPage.classList.remove("hidden");
-        quizPage.classList.add("fade-in");
+        quizPage.classList.remove("hidden"); quizPage.classList.add("fade-in");
         startTime = Date.now();
         startTimer(1200);
     }
-
     function startTimer(duration) {
         let timeLeft = duration;
         const timerElement = document.getElementById("timer");
@@ -180,7 +147,6 @@
             }
         }, 1000);
     }
-
     function lockQuestion(questionId, feedbackText) {
         document.getElementById(`${questionId}-input`).disabled = true;
         document.getElementById(`${questionId}-submit`).disabled = true;
@@ -201,9 +167,7 @@
         const result = await response.json();
         if (result.correct) {
             lockQuestion(questionId, 'Correct!');
-            if (!teamSolvedQuestions.includes(questionId)) {
-                teamSolvedQuestions.push(questionId);
-            }
+            if (!teamSolvedQuestions.includes(questionId)) teamSolvedQuestions.push(questionId);
             checkIfAllSolved();
         } else {
             feedbackEl.textContent = 'Incorrect. Try again.';
@@ -211,7 +175,6 @@
             setTimeout(() => feedbackEl.textContent = '', 2000);
         }
     }
-
     function checkIfAllSolved() {
         const roleQuestions = questions.map(q => q.id);
         const solvedRoleQuestions = teamSolvedQuestions.filter(qId => roleQuestions.includes(qId));
@@ -219,7 +182,6 @@
             endMission();
         }
     }
-
     async function endMission() {
         clearInterval(timerInterval);
         const timeTakenSec = Math.floor((Date.now() - startTime) / 1000);
