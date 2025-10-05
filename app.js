@@ -17,6 +17,7 @@ const PORT = process.env.PORT || 3000;
 const ADMIN_USER = process.env.ADMIN_USER || 'admin';
 const ADMIN_PASS = process.env.ADMIN_PASS || 'password123';
 const JWT_SECRET = process.env.JWT_SECRET || 'a_very_secret_key';
+const ROUND_1_SECRET_CODE = process.env.ROUND_1_SECRET_CODE
 
 const teamReadyStates = {};
 const missionCompleteStates = {};
@@ -106,8 +107,15 @@ const trackLocation = (req, res, next) => {
 // ======================= API ROUTES =======================
 app.post('/api/register', async (req, res) => {
     try {
-        const { teamId, delegateId, role, password } = req.body;
+        const { teamId, delegateId, role, password, round1Code } = req.body;
+
+        // Check the Round 1 Code first
+        if (round1Code !== ROUND_1_SECRET_CODE) {
+            return res.status(401).json({ message: 'Invalid Round 1 Code. Access Denied.' });
+        }
+
         if (!teamId || !delegateId || !role || !password) return res.status(400).json({ message: 'All fields are required.' });
+        
         let team = await User.findOne({ teamId });
         if (team) {
             const isMatch = await bcrypt.compare(password, team.password);
