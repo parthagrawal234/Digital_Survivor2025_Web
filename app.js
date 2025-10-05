@@ -19,6 +19,7 @@ const ADMIN_PASS = process.env.ADMIN_PASS || 'password123';
 const JWT_SECRET = process.env.JWT_SECRET || 'a_very_secret_key';
 const ROUND_1_SECRET_CODE = process.env.ROUND_1_SECRET_CODE
 
+let isRound3Live = false;
 const teamReadyStates = {};
 const missionCompleteStates = {};
 
@@ -278,9 +279,13 @@ app.post('/api/submit-final-challenge', protectPlayerRoute, async (req, res) => 
     const { finalAnswer } = req.body;
     const { teamId } = req.user;
     const FINAL_CHALLENGE_ANSWER = "YOUR_ANSWER_HERE";
+
     if (finalAnswer && finalAnswer.trim().toUpperCase() === FINAL_CHALLENGE_ANSWER) {
         try {
             await User.findOneAndUpdate({ teamId }, { round3EndTime: new Date() });
+            // Instead of just responding, broadcast to the team
+            io.to(teamId).emit('final-challenge-complete', { redirectUrl: '/round3-wait' });
+            // Still send a response to the original requester
             res.status(200).json({ success: true, message: 'Correct! Final time recorded. Well done.' });
         } catch (error) {
             res.status(500).json({ success: false, message: 'Error saving final time.' });
@@ -288,6 +293,12 @@ app.post('/api/submit-final-challenge', protectPlayerRoute, async (req, res) => 
     } else {
         res.status(400).json({ success: false, message: 'Incorrect answer. Try again.' });
     }
+});
+app.post('/api/admin/start-round3-global', protectAdminRoute, (req, res) => {
+    isRound3Live = true;
+    io.emit('start-round-3'); // Broadcast to all connected clients
+    console.log('[Game] Admin has started Round 3 for ALL teams.');
+    res.status(200).json({ message: 'Round 3 has been started for all players.' });
 });
 
 // ======================= PAGE ROUTES =======================
@@ -313,6 +324,7 @@ app.get('/dashboard', protectPlayerRoute, async (req, res) => {
 app.get('/waiting', protectPlayerRoute, trackLocation, (req, res) => res.render('waiting', { title: 'Waiting for Team', user: req.user }));
 app.get('/post-mission-wait', protectPlayerRoute, trackLocation, (req, res) => res.render('post_mission_waiting', { title: 'Mission Complete - Awaiting Team', user: req.user }));
 app.get('/webex', protectPlayerRoute, trackLocation, (req, res) => res.render('webex', { title: 'Final Challenge', user: req.user }));
+app.get('/round3-wait', protectPlayerRoute, trackLocation, (req, res) => res.render('round3_waiting', { title: 'Waiting for Round 3', user: req.user }));
 app.get('/role/cyber', protectPlayerRoute, authorizeRole('cyber'), trackLocation, (req, res) => res.render('role_cyber', { title: 'CyberSecurity Expert', user: req.user }));
 app.get('/role/eng', protectPlayerRoute, authorizeRole('eng'), trackLocation, (req, res) => res.render('role_engineer', { title: 'Engineer', user: req.user }));
 app.get('/role/opera', protectPlayerRoute, authorizeRole('opera'), trackLocation, (req, res) => res.render('role_operations', { title: 'Operations Expert', user: req.user }));
@@ -388,6 +400,11 @@ io.on('connection', (socket) => {
         if (currentTeamId && currentDelegateId && teamReadyStates[currentTeamId]) {
             delete teamReadyStates[currentTeamId][currentDelegateId];
             io.to(currentTeamId).emit('team-status-update', teamReadyStates[currentTeamId]);
+        }
+    });
+    socket.on('check-round3-status', () => {
+        if (isRound3Live) {
+            socket.emit('start-round-3');
         }
     });
 });

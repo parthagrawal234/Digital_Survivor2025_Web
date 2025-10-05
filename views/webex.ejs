@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= title %></title>
+    <script src="/socket.io/socket.io.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
@@ -54,17 +55,20 @@
         .continue-btn:hover {
             background: #ff073a; color: #0d0208; box-shadow: 0 0 15px #ff073a;
         }
-        .logout-button {
+        .logout-form {
             position: absolute;
             top: 20px;
             right: 20px;
+            z-index: 20;
+        }
+        .logout-button {
             padding: 10px 15px;
             background: rgba(255, 7, 58, 0.2);
             border: 1px solid #ff073a;
             color: #ff073a;
             cursor: pointer;
-            z-index: 20;
             transition: all 0.3s ease;
+            font-family: 'Share Tech Mono', monospace;
         }
         .logout-button:hover {
             background: #ff073a;
@@ -74,8 +78,8 @@
 </head>
 <body>
     <canvas id="network-canvas"></canvas>
-    
-    <form action="/api/logout" method="POST">
+
+    <form action="/api/logout" method="POST" class="logout-form">
         <button type="submit" class="logout-button">Logout</button>
     </form>
 
@@ -97,7 +101,7 @@
                 <input type="text" id="finalAnswer" class="answer-box" placeholder="Submit your answer here">
                 <button type="submit" class="continue-btn">Submit Answer</button>
             </form>
-            <p id="message" class="text-sm mt-4 min-h-[20px]"></p>
+            <p id="message" style="margin-top: 15px; min-height: 20px;"></p>
         </div>
     </div>
 
@@ -123,8 +127,36 @@
     }
     
     document.addEventListener('DOMContentLoaded', () => {
+        // Start visual effects immediately
         typeWriter(STORYLINE, document.getElementById('story-text'));
+
+        // Handle real-time logic in a try-catch to prevent crashes
+        try {
+            if (typeof io === 'undefined') {
+                throw new Error("Socket.IO client not loaded.");
+            }
+            const teamId = '<%= user.teamId %>';
+            const delegateId = '<%= user.delegateId %>';
+            const socket = io();
+
+            socket.on('connect', () => {
+                socket.emit('join-room', { teamId, delegateId });
+            });
+
+            socket.on('final-challenge-complete', (data) => {
+                const messageEl = document.getElementById('message');
+                messageEl.style.color = 'lightgreen';
+                messageEl.textContent = 'Team has solved the challenge! Redirecting...';
+                
+                setTimeout(() => {
+                    window.location.href = data.redirectUrl;
+                }, 2000);
+            });
+        } catch (error) {
+            console.error("Failed to initialize Socket.IO:", error.message);
+        }
         
+        // Form submission logic
         const form = document.getElementById('finalChallengeForm');
         const messageEl = document.getElementById('message');
 
@@ -144,7 +176,7 @@
 
                 if (response.ok && result.success) {
                     messageEl.style.color = 'lightgreen';
-                    messageEl.textContent = 'Correct! Final time recorded. Mission Accomplished.';
+                    messageEl.textContent = 'Correct! Awaiting team redirect...';
                     form.querySelector('button').disabled = true;
                     form.querySelector('input').disabled = true;
                 } else {
@@ -172,27 +204,16 @@
     });
 
     class Particle {
-        constructor(x, y, size, color, speedX, speedY) {
-            this.x = x; this.y = y; this.size = size; this.color = color;
-            this.speedX = speedX; this.speedY = speedY;
-        }
-        draw() {
-            ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-            ctx.fillStyle = this.color; ctx.fill();
-        }
-        update() {
-            if (this.x > canvas.width || this.x < 0) this.speedX = -this.speedX;
-            if (this.y > canvas.height || this.y < 0) this.speedY = -this.speedY;
-            this.x += this.speedX; this.y += this.speedY; this.draw();
-        }
+        constructor(x, y, size, color, speedX, speedY) { this.x = x; this.y = y; this.size = size; this.color = color; this.speedX = speedX; this.speedY = speedY; }
+        draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fillStyle = this.color; ctx.fill(); }
+        update() { if (this.x > canvas.width || this.x < 0) this.speedX = -this.speedX; if (this.y > canvas.height || this.y < 0) this.speedY = -this.speedY; this.x += this.speedX; this.y += this.speedY; this.draw(); }
     }
 
     function init() {
         particles = [];
         const numberOfParticles = (canvas.height * canvas.width) / 9000;
         for (let i = 0; i < numberOfParticles; i++) {
-            let size = (Math.random() * 2) + 1;
-            let x = Math.random() * canvas.width; let y = Math.random() * canvas.height;
+            let size = (Math.random() * 2) + 1; let x = Math.random() * canvas.width; let y = Math.random() * canvas.height;
             let speedX = (Math.random() * 0.4) - 0.2; let speedY = (Math.random() * 0.4) - 0.2;
             particles.push(new Particle(x, y, size, '#333', speedX, speedY));
         }
@@ -205,7 +226,7 @@
                 let distance = ((particles[a].x - particles[b].x) * (particles[a].x - particles[b].x)) + ((particles[a].y - particles[b].y) * (particles[a].y - particles[b].y));
                 if (distance < (canvas.width / 7) * (canvas.height / 7)) {
                     opacityValue = 1 - (distance / 20000);
-                    ctx.strokeStyle = `rgba(255, 7, 58, ${opacityValue})`; // Red lines
+                    ctx.strokeStyle = `rgba(255, 7, 58, ${opacityValue})`;
                     ctx.lineWidth = 1;
                     ctx.beginPath(); ctx.moveTo(particles[a].x, particles[a].y);
                     ctx.lineTo(particles[b].x, particles[b].y); ctx.stroke();
@@ -216,9 +237,7 @@
 
     function animate() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        for (let i = 0; i < particles.length; i++) {
-            particles[i].update();
-        }
+        for (let i = 0; i < particles.length; i++) { particles[i].update(); }
         connect();
         requestAnimationFrame(animate);
     }
