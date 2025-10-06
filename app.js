@@ -16,7 +16,7 @@ const io = new Server(server);
 const PORT = process.env.PORT || 3000;
 const ADMIN_USER = process.env.ADMIN_USER || "admin";
 const ADMIN_PASS = process.env.ADMIN_PASS || "leaninmit@123";
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET || "a_very_secret_key";
 const ROUND_1_SECRET_CODE = process.env.ROUND_1_SECRET_CODE;
 
 const teamReadyStates = {};
@@ -335,7 +335,7 @@ app.post('/admin/login', async (req, res) => {
         req.session.isAdmin = true;
         res.redirect('/admin/dashboard');
     } else {
-        res.redirect('/admin', { title: 'Admin Login', error: 'Invalid username or password.' });
+        res.render('admin_login', { title: 'Admin Login', error: 'Invalid username or password.' });
     }
 });
 app.get('/admin/dashboard', protectAdminRoute, async (req, res) => {
