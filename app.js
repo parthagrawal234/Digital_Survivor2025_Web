@@ -406,12 +406,6 @@ io.on('connection', (socket) => {
             io.to(teamId).emit('team-finished-round2');
         }
     });
-
-    socket.on('check-round3-status', () => {
-        if (isRound3Live) {
-            socket.emit('start-round-3');
-        }
-    });
     
     socket.on('disconnect', () => {
         if (currentTeamId && currentDelegateId && teamReadyStates[currentTeamId]) {

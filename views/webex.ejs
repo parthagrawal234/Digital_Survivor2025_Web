@@ -74,6 +74,8 @@
             background: #ff073a;
             color: #0d0208;
         }
+        .answer-box:disabled { background-color: #2a2a2a; cursor: not-allowed; }
+        .continue-btn:disabled { background-color: #333; color: #666; border-color: #444; cursor: not-allowed; }
     </style>
 </head>
 <body>
@@ -97,10 +99,10 @@
             <p>
                 The head guard, a culinary enthusiast, is known to be extremely forgetful. He jots everything down in his personal digital recipe book. Our intel suggests he's hidden the access password for the detention block somewhere within his favorite recipe. The agent managed to sneak out a copy of the file before getting caught. Can you cook up a solution and find the password?
             </p>
-            <a href="https://recipie-book-peach.vercel.app/">Recipe Book</a>
+            <a href="https://recipie-book-peach.vercel.app/" target="_blank">Recipe Book</a>
             <form id="finalChallengeForm">
-                <input type="text" id="finalAnswer" class="answer-box" placeholder="Submit your answer here">
-                <button type="submit" class="continue-btn">Submit Answer</button>
+                <input type="text" id="finalAnswer" class="answer-box" placeholder="css{...}">
+                <button type="submit" class="continue-btn">Submit Code</button>
             </form>
             <p id="message" style="margin-top: 15px; min-height: 20px;"></p>
         </div>
@@ -128,27 +130,19 @@
     }
     
     document.addEventListener('DOMContentLoaded', async () => {
-        // Start visual effects immediately
         typeWriter(STORYLINE, document.getElementById('story-text'));
-
-        // Handle real-time logic in a try-catch to prevent crashes
+        
         try {
-            if (typeof io === 'undefined') {
-                throw new Error("Socket.IO client not loaded.");
-            }
             const teamId = '<%= user.teamId %>';
             const delegateId = '<%= user.delegateId %>';
             const socket = io();
-
             socket.on('connect', () => {
                 socket.emit('join-room', { teamId, delegateId });
             });
-
             socket.on('final-challenge-complete', (data) => {
                 const messageEl = document.getElementById('message');
                 messageEl.style.color = 'lightgreen';
                 messageEl.textContent = 'Team has solved the challenge! Redirecting...';
-                
                 setTimeout(() => {
                     window.location.href = data.redirectUrl;
                 }, 2000);
@@ -156,15 +150,15 @@
         } catch (error) {
             console.error("Failed to initialize Socket.IO:", error.message);
         }
-        
-        // Form submission logic
+
         const form = document.getElementById('finalChallengeForm');
         const messageEl = document.getElementById('message');
+        const answerInput = document.getElementById('finalAnswer');
+        const submitButton = form.querySelector('button');
+
         const progressRes = await fetch('/api/get-progress');
         const progress = await progressRes.json();
-        // It then checks if the 'solvedQuestions' array includes the ID for this final challenge ('final-q1').
-        if (progress.solvedQuestions && progress.solvedQuestions.includes('final-q1')) {
-            // If it has already been solved, a success message is shown and the form is disabled.
+        if (progress.solvedQuestions && progress.solvedQuestions.includes('webex-q1')) {
             messageEl.style.color = 'lightgreen';
             messageEl.textContent = 'Challenge already completed by your team.';
             answerInput.disabled = true;
@@ -174,7 +168,7 @@
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             messageEl.textContent = '';
-            const finalAnswer = document.getElementById('finalAnswer').value;
+            const finalAnswer = answerInput.value;
 
             try {
                 const response = await fetch('/api/submit-final-challenge', {
@@ -182,17 +176,15 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ finalAnswer })
                 });
-
                 const result = await response.json();
-
                 if (response.ok && result.success) {
                     messageEl.style.color = 'lightgreen';
                     messageEl.textContent = 'Correct! Awaiting team redirect...';
-                    form.querySelector('button').disabled = true;
-                    form.querySelector('input').disabled = true;
+                    answerInput.disabled = true;
+                    submitButton.disabled = true;
                 } else {
                     messageEl.style.color = '#ff073a';
-                    messageEl.textContent = result.message || 'Incorrect answer.';
+                    messageEl.textContent = result.message || 'Incorrect flag.';
                 }
             } catch (error) {
                 messageEl.style.color = '#ff073a';
@@ -201,7 +193,6 @@
         });
     });
 
-    // --- Animated Network Background ---
     const canvas = document.getElementById('network-canvas');
     const ctx = canvas.getContext('2d');
     let particles = [];
