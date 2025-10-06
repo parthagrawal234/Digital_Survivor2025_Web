@@ -262,7 +262,7 @@ app.post('/api/get-hint', protectPlayerRoute, async (req, res) => {
 app.post('/api/submit-final-challenge', protectPlayerRoute, async (req, res) => {
     const { finalAnswer } = req.body;
     const { teamId } = req.user;
-    const FINAL_CHALLENGE_ANSWER = "YOUR_ANSWER_HERE";
+    const FINAL_CHALLENGE_ANSWER = "CSS{YOU_FOUND_MY_COOKIE}";
     const FINAL_CHALLENGE_ID = "final-q1";
     const FINAL_CHALLENGE_POINTS = 50;
     if (finalAnswer && finalAnswer.trim().toUpperCase() === FINAL_CHALLENGE_ANSWER) {
