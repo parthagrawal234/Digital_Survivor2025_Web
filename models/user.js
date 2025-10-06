@@ -53,18 +53,8 @@ const userSchema = new mongoose.Schema({
     round2StartTime: {
         type: Date
     },
-    // This is the end time for the WHOLE game, recorded when the final challenge is solved.
     round3EndTime: {
         type: Date
-    },
-    // NEW: Time spent on the final challenge specifically.
-    round3TimeSpent: {
-        type: Number,
-        default: 0
-    },
-    round3Started: {
-        type: Boolean,
-        default: false
     }
 });
 

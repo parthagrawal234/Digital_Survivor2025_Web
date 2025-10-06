@@ -19,7 +19,6 @@ const ADMIN_PASS = process.env.ADMIN_PASS || 'password123';
 const JWT_SECRET = process.env.JWT_SECRET || 'a_very_secret_key';
 const ROUND_1_SECRET_CODE = "code123";
 
-let isRound3Live = false;
 const teamReadyStates = {};
 const missionCompleteStates = {};
 
@@ -282,7 +281,7 @@ app.post('/api/submit-final-challenge', protectPlayerRoute, async (req, res) => 
             team.round3EndTime = new Date();
             await team.save();
             
-            io.to(teamId).emit('final-challenge-complete', { redirectUrl: '/round3-wait' });
+            io.to(teamId).emit('final-challenge-complete', { redirectUrl: '/thank-you' });
             res.status(200).json({ success: true, message: 'Correct! Final time recorded. Well done.' });
         } catch (error) {
             res.status(500).json({ success: false, message: 'Error saving final time.' });
@@ -290,45 +289,6 @@ app.post('/api/submit-final-challenge', protectPlayerRoute, async (req, res) => 
     } else {
         res.status(400).json({ success: false, message: 'Incorrect answer. Try again.' });
     }
-});
-app.post('/api/submit-final', protectPlayerRoute, async (req, res) => {
-    const { finalAnswer, timeTakenSec } = req.body;
-    const { teamId, delegateId } = req.user;
-    const FINAL_CHALLENGE_ANSWER = "YOUR_ANSWER_HERE";
-    const FINAL_CHALLENGE_ID = "final-q1";
-    const FINAL_CHALLENGE_POINTS = 50;
-
-    if (finalAnswer && finalAnswer.trim().toUpperCase() === FINAL_CHALLENGE_ANSWER) {
-        try {
-            const team = await User.findOne({ teamId });
-            if (team.solvedQuestions.includes(FINAL_CHALLENGE_ID)) {
-                return res.status(200).json({ success: true, message: 'Challenge already completed by your team.' });
-            }
-
-            const delegate = team.delegates.find(d => d.delegateId === delegateId);
-            if (delegate) {
-                delegate.points += FINAL_CHALLENGE_POINTS;
-            }
-
-            team.solvedQuestions.push(FINAL_CHALLENGE_ID);
-            team.round3EndTime = new Date();
-            team.round3TimeSpent = timeTakenSec;
-            await team.save();
-            
-            io.to(teamId).emit('final-challenge-complete', { redirectUrl: '/thank-you' });
-            res.status(200).json({ success: true, message: 'Correct! Final time recorded.' });
-        } catch (error) {
-            res.status(500).json({ success: false, message: 'Error saving final progress.' });
-        }
-    } else {
-        res.status(400).json({ success: false, message: 'Incorrect answer. Try again.' });
-    }
-});
-
-app.post('/api/admin/start-round3-global', protectAdminRoute, (req, res) => {
-    isRound3Live = true;
-    io.emit('start-round-3');
-    res.status(200).json({ message: 'Round 3 has been started for all players.' });
 });
 
 // ======================= PAGE ROUTES =======================
@@ -358,7 +318,6 @@ app.get('/round3-wait', protectPlayerRoute, trackLocation, (req, res) => res.ren
 app.get('/role/cyber', protectPlayerRoute, authorizeRole('cyber'), trackLocation, (req, res) => res.render('role_cyber', { title: 'CyberSecurity Expert', user: req.user }));
 app.get('/role/eng', protectPlayerRoute, authorizeRole('eng'), trackLocation, (req, res) => res.render('role_engineer', { title: 'Engineer', user: req.user }));
 app.get('/role/opera', protectPlayerRoute, authorizeRole('opera'), trackLocation, (req, res) => res.render('role_operations', { title: 'Operations Expert', user: req.user }));
-app.get('/final', protectPlayerRoute, trackLocation, (req, res) => res.render('final', { title: 'Final Challenge', user: req.user }));
 app.get('/thank-you', protectPlayerRoute, trackLocation, (req, res) => res.render('thank_you', { title: 'Competition Finished', user: req.user }));
 
 // ======================= ADMIN ROUTES =======================
