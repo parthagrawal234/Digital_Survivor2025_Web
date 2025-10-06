@@ -14,8 +14,8 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 const PORT = process.env.PORT || 3000;
-const ADMIN_USER = process.env.ADMIN_USER;
-const ADMIN_PASS = process.env.ADMIN_PASS;
+const ADMIN_USER = process.env.ADMIN_USER || "admin";
+const ADMIN_PASS = process.env.ADMIN_PASS || "leaninmit@123";
 const JWT_SECRET = process.env.JWT_SECRET;
 const ROUND_1_SECRET_CODE = process.env.ROUND_1_SECRET_CODE;
 
@@ -239,7 +239,16 @@ app.post('/api/end-mission', protectPlayerRoute, async (req, res) => {
 app.post('/api/get-hint', protectPlayerRoute, async (req, res) => {
     const { questionId } = req.body;
     const { teamId, delegateId } = req.user;
-    const hints = { /* ... all hint text ... */ };
+    const hints = {
+        'cyber-q1': 'Think about a major cybersecurity event in 2020 involving a software supply chain. The malicious domain was registered in a capital city known for its vibrant culture and history.',
+        'eng-q1': 'Focus on the "OR" conditions. Phantom Operative and Manual Override can force activation on their own.',
+        'eng-q2': 'The first gate is a NOR gate. The second is a NAND gate. The final gate is an AND gate.',
+        'eng-q3': 'Trace the loop for each index. Even indices are doubled, odd indices are decremented.',
+        'eng-q4': 'In C, dividing two integers results in an integer. The decimal part is truncated before being assigned to the float.',
+        'eng-q5': 'The `sum` variable is never initialized to 0. It starts with a random garbage value.',
+        'eng-q6': 'Arrays in C are 0-indexed. An array of size 5 has indices 0, 1, 2, 3, and 4. Accessing index 5 is out of bounds.',
+        'opera-q1': 'The racing event is the Formula E championship. Research the title sponsor for the 2024 season in that specific city. The fort is a famous landmark in the same city.'
+    };
     const hintText = hints[questionId];
     if (hintText) {
         try {
@@ -326,7 +335,7 @@ app.post('/admin/login', async (req, res) => {
         req.session.isAdmin = true;
         res.redirect('/admin/dashboard');
     } else {
-        res.render('admin_login', { title: 'Admin Login', error: 'Invalid username or password.' });
+        res.redirect('/admin', { title: 'Admin Login', error: 'Invalid username or password.' });
     }
 });
 app.get('/admin/dashboard', protectAdminRoute, async (req, res) => {
