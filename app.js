@@ -15,7 +15,7 @@ const server = http.createServer(app);
 const io = new Server(server);
 const PORT = process.env.PORT || 3000;
 const ADMIN_USER = process.env.ADMIN_USER || "admin";
-const ADMIN_PASS = process.env.ADMIN_PASS || "leaninmit@123";
+const ADMIN_PASS = process.env.ADMIN_PASS || "leaninmit@123$$";
 const JWT_SECRET = process.env.JWT_SECRET || "a_very_secret_key";
 const ROUND_1_SECRET_CODE = process.env.ROUND_1_SECRET_CODE;
 
@@ -331,6 +331,10 @@ app.get('/thank-you', protectPlayerRoute, trackLocation, (req, res) => res.rende
 app.get('/admin', (req, res) => res.render('admin_login', { title: 'Admin Login', error: null }));
 app.post('/admin/login', async (req, res) => {
     const { username, password } = req.body;
+    console.log('Submitted Username:', username);
+    console.log('Submitted Password:', password);
+    console.log('Expected Username:', ADMIN_USER);
+    console.log('Expected Password:', ADMIN_PASS);
     if (username === ADMIN_USER && password === ADMIN_PASS) {
         req.session.isAdmin = true;
         res.redirect('/admin/dashboard');
@@ -353,7 +357,7 @@ app.get('/admin/dashboard', protectAdminRoute, async (req, res) => {
             }
             return a.totalTime - b.totalTime;
         });
-        res.render('admin', { title: 'Admin Dashboard', teams: teams, isRound3Live });
+        res.render('admin', { title: 'Admin Dashboard', teams: teams});
     } catch (error) {
         res.status(500).send('Error fetching team data.');
     }
