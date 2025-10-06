@@ -14,10 +14,10 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 const PORT = process.env.PORT || 3000;
-const ADMIN_USER = process.env.ADMIN_USER || 'admin';
-const ADMIN_PASS = process.env.ADMIN_PASS || 'password123';
-const JWT_SECRET = process.env.JWT_SECRET || 'a_very_secret_key';
-const ROUND_1_SECRET_CODE = "code123";
+const ADMIN_USER = process.env.ADMIN_USER;
+const ADMIN_PASS = process.env.ADMIN_PASS;
+const JWT_SECRET = process.env.JWT_SECRET;
+const ROUND_1_SECRET_CODE = process.env.ROUND_1_SECRET_CODE;
 
 const teamReadyStates = {};
 const missionCompleteStates = {};
