@@ -260,34 +260,32 @@ app.post('/api/get-hint', protectPlayerRoute, async (req, res) => {
 
 app.post('/api/submit-final-challenge', protectPlayerRoute, async (req, res) => {
     const { finalAnswer } = req.body;
-    const { teamId } = req.user;
-    const FINAL_CHALLENGE_ANSWER = "CSS{YOU_FOUND_MY_COOKIE}";
-    const FINAL_CHALLENGE_ID = "final-q1";
-    const FINAL_CHALLENGE_POINTS = 50;
-    if (finalAnswer && finalAnswer.trim().toUpperCase() === FINAL_CHALLENGE_ANSWER) {
+    const { teamId, delegateId } = req.user;
+    const WEBEX_ANSWER = "css{you_found_my_cookie}";
+    const WEBEX_CHALLENGE_ID = "webex-q1";
+    const WEBEX_CHALLENGE_POINTS = 50;
+
+    if (finalAnswer && finalAnswer.trim().toLowerCase() === WEBEX_ANSWER) {
         try {
             const team = await User.findOne({ teamId });
-            
-            if (team.solvedQuestions.includes(FINAL_CHALLENGE_ID)) {
-                return res.status(200).json({ success: true, message: 'Challenge already completed by your team.' });
+            if (team.solvedQuestions.includes(WEBEX_CHALLENGE_ID)) {
+                io.to(teamId).emit('final-challenge-complete', { redirectUrl: '/thank-you' });
+                return res.status(200).json({ success: true, message: 'Challenge already completed.' });
             }
-
             const delegate = team.delegates.find(d => d.delegateId === delegateId);
             if (delegate) {
-                delegate.points += FINAL_CHALLENGE_POINTS;
+                delegate.points += WEBEX_CHALLENGE_POINTS;
             }
-
-            team.solvedQuestions.push(FINAL_CHALLENGE_ID);
-            team.round3EndTime = new Date();
+            team.solvedQuestions.push(WEBEX_CHALLENGE_ID);
+            team.round3EndTime = new Date(); // Stop the final timer
             await team.save();
-            
             io.to(teamId).emit('final-challenge-complete', { redirectUrl: '/thank-you' });
-            res.status(200).json({ success: true, message: 'Correct! Final time recorded. Well done.' });
+            res.status(200).json({ success: true, message: 'Correct! Final time recorded.' });
         } catch (error) {
-            res.status(500).json({ success: false, message: 'Error saving final time.' });
+            res.status(500).json({ success: false, message: 'Error saving final progress.' });
         }
     } else {
-        res.status(400).json({ success: false, message: 'Incorrect answer. Try again.' });
+        res.status(400).json({ success: false, message: 'Incorrect flag. Try again.' });
     }
 });
 
