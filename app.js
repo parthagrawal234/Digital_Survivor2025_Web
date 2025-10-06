@@ -17,7 +17,7 @@ const PORT = process.env.PORT || 3000;
 const ADMIN_USER = process.env.ADMIN_USER || 'admin';
 const ADMIN_PASS = process.env.ADMIN_PASS || 'password123';
 const JWT_SECRET = process.env.JWT_SECRET || 'a_very_secret_key';
-const ROUND_1_SECRET_CODE = 'R1_COMPLETE_2025';
+const ROUND_1_SECRET_CODE = "code123";
 
 let isRound3Live = false;
 const teamReadyStates = {};
