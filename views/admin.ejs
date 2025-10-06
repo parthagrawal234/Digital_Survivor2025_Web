@@ -16,10 +16,10 @@
         <header class="flex flex-col md:flex-row justify-between items-center mb-8 pb-4 border-b border-slate-700 gap-4">
             <h1 class="font-orbitron text-3xl font-bold text-white">Admin Dashboard</h1>
             <div class="flex items-center gap-4">
-                <button id="start-round3-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300" <%= isRound3Live ? 'disabled' : '' %>>
+                <button id="start-round3-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg" <%= isRound3Live ? 'disabled' : '' %>>
                     <%= isRound3Live ? 'Round 3 is LIVE' : 'Start Round 3 for ALL' %>
                 </button>
-                <a href="/admin/logout" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300">Logout</a>
+                <a href="/admin/logout" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg">Logout</a>
             </div>
         </header>
 
@@ -28,18 +28,18 @@
                 <table class="min-w-full divide-y divide-slate-700">
                     <thead class="bg-slate-800">
                         <tr>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-indigo-300 uppercase tracking-wider">Team ID</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-indigo-300 uppercase tracking-wider">Status</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-indigo-300 uppercase tracking-wider">Delegates & Progress</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-indigo-300 uppercase tracking-wider">Final Score</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-indigo-300 uppercase tracking-wider">Total Time</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-indigo-300 uppercase tracking-wider">Rank</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-indigo-300 uppercase tracking-wider">Team ID</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-indigo-300 uppercase tracking-wider">Delegates & Progress</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-indigo-300 uppercase tracking-wider">Final Score</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-indigo-300 uppercase tracking-wider">Total Time</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-indigo-300 uppercase tracking-wider">Final Challenge Time</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-700">
                         <% if (teams.length > 0) { %>
-                            <% teams.forEach(team => { %>
+                            <% teams.forEach((team, index) => { %>
                                 <%
-                                    const totalScore = team.delegates.reduce((acc, d) => acc + d.points, 0);
                                     let totalTimeDisplay = "N/A";
                                     if (team.round2StartTime && team.round3EndTime) {
                                         const diffMs = new Date(team.round3EndTime) - new Date(team.round2StartTime);
@@ -52,34 +52,29 @@
                                     }
                                 %>
                                 <tr class="bg-slate-800/60 even:bg-slate-800/40">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white"><%= index + 1 %></td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white"><%= team.teamId %></td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                        <% if (team.delegates.length === 3) { %>
-                                            <span class="px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-500/20 text-green-300">Complete</span>
-                                        <% } else { %>
-                                            <span class="px-2.5 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-500/20 text-yellow-300">In Progress (<%= team.delegates.length %>/3)</span>
-                                        <% } %>
-                                    </td>
                                     <td class="px-6 py-4 text-sm text-gray-300">
                                         <div class="space-y-2">
                                             <% team.delegates.forEach(delegate => { %>
                                                 <div>
                                                     <strong><%= delegate.delegateId %></strong> (<%= delegate.role %>)
                                                     <div class="text-xs text-gray-400">
-                                                        <span class="font-medium text-indigo-400"><%= delegate.points %> pts</span> / 
-                                                        <span><%= delegate.timeSpent %>s</span>
+                                                        <span class="font-medium text-indigo-400"><%= delegate.points %> pts</span> /
+                                                        <span>Hints: <%= delegate.hintsUsed %></span>
                                                     </div>
                                                 </div>
                                             <% }); %>
                                         </div>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-lg text-green-400"><%= totalScore %></td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-lg text-green-400"><%= team.totalScore %></td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-cyan-400"><%= totalTimeDisplay %></td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300"><%= team.round3TimeSpent > 0 ? `${team.round3TimeSpent}s` : 'N/A' %></td>
                                 </tr>
                             <% }); %>
                         <% } else { %>
                             <tr>
-                                <td colspan="5" class="text-center py-10 text-gray-400">No teams have registered yet.</td>
+                                <td colspan="6" class="text-center py-10 text-gray-400">No teams have registered yet.</td>
                             </tr>
                         <% } %>
                     </tbody>

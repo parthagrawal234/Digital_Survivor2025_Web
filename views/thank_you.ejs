@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="/stylesheets/output.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <style> .font-orbitron { font-family: 'Orbitron', sans-serif; } </style>
+</head>
+<body class="bg-slate-900 text-gray-300">
+    <div class="fixed inset-0 z-[-1] bg-gradient-to-br from-gray-900 via-[#0c2a2a] to-teal-900"></div>
+    <header class="absolute top-0 left-0 w-full p-4 md:p-6 z-20">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div>
+                <h1 class="font-orbitron text-lg font-bold text-white">Team: <span class="text-teal-400"><%= user.teamId %></span></h1>
+            </div>
+            <form action="/api/logout" method="POST">
+                <button type="submit" class="bg-red-600/80 hover:bg-red-700/80 text-white font-bold py-2 px-4 rounded-lg">Logout</button>
+            </form>
+        </div>
+    </header>
+    <main class="min-h-screen flex flex-col items-center justify-center text-center p-4">
+        <div class="max-w-2xl w-full">
+            <h1 class="font-orbitron text-5xl font-black text-white">Competition Finished</h1>
+            <p class="mt-4 text-lg text-teal-300">Thank you for participating.</p>
+            <p class="mt-8 text-gray-400">Your team's results have been recorded. Please await the final announcement from the event organizers.</p>
+        </div>
+    </main>
+</body>
+</html>
+
